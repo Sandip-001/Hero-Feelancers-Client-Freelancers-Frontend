@@ -1,8 +1,8 @@
-import React from 'react';
-import { Search, MessageCircle, Check, CheckCheck } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { Check, CheckCheck, MessageCircle, Search } from 'lucide-react';
+import React from 'react';
 
 interface Message {
   id: string;
@@ -79,7 +79,7 @@ export default function MessageList({ className, onSelectMessage, selectedMessag
   const [sortBy, setSortBy] = React.useState('Newest');
 
   return (
-    <div className={cn("w-[320px] bg-white border-r border-gray-200 flex flex-col h-screen", className)}>
+    <div className={cn("w-[320px] pt-12 bg-white border-r border-gray-200 flex flex-col h-screen", className)}>
 
       {/* Header */}
       <div className="p-4 border-b border-gray-200">

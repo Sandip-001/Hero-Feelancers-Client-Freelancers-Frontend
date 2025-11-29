@@ -44,7 +44,7 @@ const proposals = [
 
 export default function ProposalsPage() {
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <div className="p-8 max-w-7xl pt-12 mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Project Details</h1>
       </div>

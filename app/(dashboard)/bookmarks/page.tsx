@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function FavouritesPage() {
   return (
-    <div className="p-8">
+    <div className="p-8 pt-12">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">My Favourites</h1>
         <p className="text-gray-500 mt-1">Your bookmarked projects and freelancers</p>

@@ -11,7 +11,7 @@ export default function RightSidebar() {
         top-0 
         right-0 
         h-full 
-        w-80   /* === 20rem */
+        w-65   /* === 20rem */
         border-l 
         bg-white 
         px-5 

@@ -1,6 +1,5 @@
-import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Card, CardContent } from "@/components/ui/card"
 import { Bell } from "lucide-react"
 
 const notifications = [
@@ -43,7 +42,7 @@ const notifications = [
 
 export default function NotificationsPage() {
   return (
-    <div className="p-8">
+    <div className="p-8 pt-12">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Notifications</h1>
         <p className="text-gray-500 mt-1">Stay updated with your latest activities</p>

@@ -99,7 +99,7 @@ export default function DashboardPage() {
   return (
     <div className="flex">
       {/* MAIN CONTENT */}
-      <div className="flex-1 px-8 py-6 pt-24 pr-[22rem] space-y-10">
+      <div className="flex-1 px-8 py-6 pt-16 pr-[22rem] space-y-10">
         {/* Welcome Section */}
         <div>
           <h1 className="text-3xl font-semibold text-gray-900">

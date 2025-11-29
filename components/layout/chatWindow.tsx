@@ -82,7 +82,7 @@ export default function ChatWindow({ className }: ChatWindowProps) {
   };
 
   return (
-    <div className={cn("flex-1 bg-white flex flex-col h-screen", className)}>
+    <div className={cn("flex-1 pt-12 bg-white flex flex-col h-screen", className)}>
       
       {/* ---------------------- CHAT HEADER ---------------------- */}
       <div className="h-16 border-b border-gray-200 px-6 flex items-center justify-between">

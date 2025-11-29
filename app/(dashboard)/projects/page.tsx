@@ -71,7 +71,7 @@ export default function ProjectsPage() {
   const [activeTab, setActiveTab] = useState("new")
 
   return (
-    <div className="p-8">
+    <div className="p-8 pt-16">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Your projects</h1>
         <p className="text-gray-500 mt-1">Here is a list of all the projects on which you have been working.</p>
@@ -176,102 +176,117 @@ export default function ProjectsPage() {
             ))}
         </TabsContent>
 
-        <TabsContent value="awarded" className="space-y-6">
-          {projects
-            .filter((p) => p.status === "Awarded")
-            .map((project) => (
-              <div key={project.id} className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-xl">{project.title}</CardTitle>
-                        <Badge variant="outline" className="mt-2">
-                          {project.category}
-                        </Badge>
-                      </div>
-                      <span className="text-sm text-gray-500">{project.proposals} Proposals</span>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-sm text-gray-600">{project.description}</p>
-                    <div className="flex items-center space-x-6 text-sm">
-                      <div className="flex items-center text-gray-600">
-                        <Calendar className="h-4 w-4 mr-1" />
-                        Closed - {project.closed}
-                      </div>
-                      <div className="flex items-center text-yellow-500">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} className="h-4 w-4 fill-current" />
-                        ))}
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between pt-4 border-t">
-                      <Button variant="outline">Send Message</Button>
-                      <Button className="bg-green-500 hover:bg-green-600">
-                        Check Payment Details
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+       <TabsContent value="awarded" className="space-y-6">
+  {projects
+    .filter((p) => p.status === "Awarded")
+    .map((project) => {
+      const [showMilestones, setShowMilestones] = useState(false)
 
-                {project.milestones && (
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="space-y-4">
-                        {project.milestones.map((milestone, index) => (
-                          <div
-                            key={index}
-                            className={`flex items-center justify-between p-4 rounded-lg ${
-                              milestone.completed
-                                ? "bg-green-100 border-2 border-green-500"
-                                : "bg-red-100 border-2 border-red-400"
+      return (
+        <div key={project.id} className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="text-xl">{project.title}</CardTitle>
+                  <Badge variant="outline" className="mt-2">
+                    {project.category}
+                  </Badge>
+                </div>
+                <span className="text-sm text-gray-500">{project.proposals} Proposals</span>
+              </div>
+            </CardHeader>
+
+            <CardContent className="space-y-4">
+              <p className="text-sm text-gray-600">{project.description}</p>
+
+              <div className="flex items-center space-x-6 text-sm">
+                <div className="flex items-center text-gray-600">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  Closed - {project.closed}
+                </div>
+
+                <div className="flex items-center text-yellow-500">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-current" />
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-4 border-t">
+                <Button variant="outline">Send Message</Button>
+
+                <Button
+                  className="bg-green-500 hover:bg-green-600"
+                  onClick={() => setShowMilestones(!showMilestones)}
+                >
+                  {showMilestones ? "Hide Payment Details" : "Check Payment Details"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* SHOW MILESTONES ONLY WHEN TOGGLED */}
+          {showMilestones && project.milestones && (
+            <Card>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {project.milestones.map((milestone, index) => (
+                    <div
+                      key={index}
+                      className={`flex items-center justify-between p-4 rounded-lg ${
+                        milestone.completed
+                          ? "bg-green-100 border-2 border-green-500"
+                          : "bg-red-100 border-2 border-red-400"
+                      }`}
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="h-3 w-3 rounded-full bg-gray-400" />
+                        <div>
+                          <h4
+                            className={`font-semibold ${
+                              milestone.completed ? "text-green-800" : "text-red-800"
                             }`}
                           >
-                            <div className="flex items-center space-x-4">
-                              <div className="h-3 w-3 rounded-full bg-gray-400" />
-                              <div>
-                                <h4
-                                  className={`font-semibold ${
-                                    milestone.completed ? "text-green-800" : "text-red-800"
-                                  }`}
-                                >
-                                  {milestone.name}
-                                </h4>
-                                <p
-                                  className={`text-sm ${
-                                    milestone.completed ? "text-green-700" : "text-red-700"
-                                  }`}
-                                >
-                                  {milestone.description}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p
-                                className={`font-semibold ${
-                                  milestone.completed ? "text-green-800" : "text-red-800"
-                                }`}
-                              >
-                                {milestone.amount}
-                              </p>
-                              <p
-                                className={`text-sm ${
-                                  milestone.completed ? "text-green-700" : "text-red-700"
-                                }`}
-                              >
-                                {milestone.date}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
+                            {milestone.name}
+                          </h4>
+                          <p
+                            className={`text-sm ${
+                              milestone.completed ? "text-green-700" : "text-red-700"
+                            }`}
+                          >
+                            {milestone.description}
+                          </p>
+                        </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            ))}
-        </TabsContent>
+
+                      <div className="text-right">
+                        <p
+                          className={`font-semibold ${
+                            milestone.completed ? "text-green-800" : "text-red-800"
+                          }`}
+                        >
+                          {milestone.amount}
+                        </p>
+                        <p
+                          className={`text-sm ${
+                            milestone.completed ? "text-green-700" : "text-red-700"
+                          }`}
+                        >
+                          {milestone.date}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )
+    })}
+</TabsContent>
+
 
         <TabsContent value="declined" className="flex flex-col items-center justify-center py-20">
           <div className="text-center">
