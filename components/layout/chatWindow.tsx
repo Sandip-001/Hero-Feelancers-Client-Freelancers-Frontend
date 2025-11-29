@@ -254,21 +254,21 @@ export default function ChatWindow({ className }: ChatWindowProps) {
             <div className="space-y-5">
 
               <div className="p-4 bg-gray-50 rounded-lg border">
-                <h3 className="font-medium mb-1">📄 Project Documents</h3>
+                <h3 className="font-medium mb-1">Project Documents</h3>
                 <p className="text-sm text-gray-600">
                   All project-related documents will be available here.
                 </p>
               </div>
 
               <div className="p-4 bg-gray-50 rounded-lg border">
-                <h3 className="font-medium mb-1">👨‍💼 Relationship Manager</h3>
+                <h3 className="font-medium mb-1">Relationship Manager</h3>
                 <p className="text-sm text-gray-600">
                   Relationship Manager can access and review all documents.
                 </p>
               </div>
 
               <div className="p-4 bg-gray-50 rounded-lg border">
-                <h3 className="font-medium mb-2">🏆 Awards & Milestones</h3>
+                <h3 className="font-medium mb-2">Awards & Milestones</h3>
                 <p className="text-sm text-gray-600 mb-3">
                   View project milestones and payment breakdowns.
                 </p>

@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { motion, AnimatePresence } from "framer-motion"; 
+import { motion, AnimatePresence, Variants } from "framer-motion"; 
 // import heroImg from "/images/landingpage/freelancer-illustration.png";
 // import professionalImg from "/images/landingpage/professional-woman.png";
 import {
@@ -31,9 +31,9 @@ function cn(...inputs: ClassValue[]) {
 }
 
 // --- Animation Variants ---
-const fadeInUp = {
+const fadeInUp : Variants = {
   hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
 
 const staggerContainer = {
@@ -123,10 +123,11 @@ const PORTFOLIOS = [...BASE_PORTFOLIOS, ...BASE_PORTFOLIOS.map(p => ({...p, name
 
 const Navbar = () => (
   <motion.nav 
-    initial={{ y: -100 }}
-    animate={{ y: 0 }}
+    initial={{ y: -100, opacity: 0 }}
+    animate={{ y: 0, opacity: 1 }}
     transition={{ duration: 0.5 }}
-    className="w-full py-4 px-6 md:px-12 flex justify-between items-center bg-white sticky top-0 z-50 shadow-sm"
+    // UPDATED CLASSNAME BELOW:
+    className="fixed left-0 right-0 top-4 mx-auto w-[95%] md:max-w-6xl py-4 px-6 md:px-12 flex justify-between items-center bg-white/90 backdrop-blur-md z-50 shadow-md rounded-2xl border border-gray-100"
   >
     <div className="flex items-center gap-2 cursor-pointer">
       <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">S</div>
@@ -142,8 +143,8 @@ const Navbar = () => (
     </div>
 
     <motion.button 
-      whileHover={hoverScale}
-      whileTap={tapScale}
+      whileHover={{ scale: 1.05 }} // Added inline for demo, replace with your variable
+      whileTap={{ scale: 0.95 }}   // Added inline for demo, replace with your variable
       className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2.5 rounded-full text-sm font-medium transition-colors shadow-blue-200 shadow-lg"
     >
       Post a project
@@ -202,7 +203,7 @@ const Hero = () => (
         transition={{ 
           duration: 10, 
           repeat: Infinity,
-          ease: [0.42, 0, 0.58, 1]
+          ease: "easeInOut" as const 
         }}
         className="absolute top-10 right-10 w-[400px] h-[400px] bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30"
       ></motion.div>
@@ -219,7 +220,7 @@ const Hero = () => (
             transition={{ 
                repeat: Infinity, 
                duration: 4, 
-               ease: [0.42, 0, 0.58, 1] 
+               ease: "easeInOut" as const
             }}
          >
             <img 
@@ -286,7 +287,7 @@ const FindBest = () => (
           {/* Floating Stats Card 1 */}
           <motion.div 
             animate={{ y: [0, -10, 0] }}
-            transition={{ repeat: Infinity, duration: 3, ease: [0.42, 0, 0.58, 1], delay: 0.5 }}
+            transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" as const, delay: 0.5 }}
             className="absolute top-8 right-[80px] bg-white p-4 rounded-xl shadow-lg flex items-center gap-3 z-10"
           >
              <div className="bg-blue-100 p-2 rounded-full text-blue-600 font-bold text-l">500+</div>
@@ -298,7 +299,7 @@ const FindBest = () => (
           {/* Floating Stats Card 2 */}
           <motion.div 
              animate={{ y: [0, -12, 0] }}
-             transition={{ repeat: Infinity, duration: 4, ease: [0.42, 0, 0.58, 1] }}
+             transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" as const}}
              className="absolute bottom-[150px] -right-12 bg-white p-4 rounded-xl shadow-lg flex items-center gap-3 z-10"
           >
              <div className="bg-orange-100 p-2 rounded-full text-orange-600 font-bold text-l">300+</div>
