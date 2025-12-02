@@ -17,8 +17,9 @@ import {
     Send,
     Settings,
     Star,
-    UserCircle,
     Users,
+    Contact,
+    CircleUserRound
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -38,7 +39,8 @@ const menuItems = [
   { icon: Bell, label: "Notifications", href: "/notifications", badge: 5, shouldCollapse: true },
   { icon: FileCheck, label: "Articles", href: "/articles" },
   { icon: Star, label: "Bookmarks", href: "/bookmarks" },
-  { icon: UserCircle, label: "Contacts", href: "/contacts" },
+  { icon: Contact, label: "Contacts", href: "/contacts" },
+  { icon: CircleUserRound, label: "Profile", href: "/profile" },
 ];
 
 const promotionItems = [

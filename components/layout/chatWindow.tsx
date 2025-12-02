@@ -1,14 +1,9 @@
-import React, { useState } from "react";
-import {
-  Send,
-  Paperclip,
-  Smile,
-  Video,
-} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { FileText, Paperclip, Phone, Smile, Video } from "lucide-react";
+import { useState } from "react";
 
 interface ChatMessage {
   id: string;
@@ -71,7 +66,6 @@ export default function ChatWindow({ className }: ChatWindowProps) {
   const [message, setMessage] = useState("");
   const [isOnline, setIsOnline] = useState(true);
 
-  // 👉 INFO DRAWER STATE
   const [showInfo, setShowInfo] = useState(false);
 
   const handleSendMessage = () => {
@@ -82,7 +76,7 @@ export default function ChatWindow({ className }: ChatWindowProps) {
   };
 
   return (
-    <div className={cn("flex-1 pt-12 bg-white flex flex-col h-screen", className)}>
+    <div className={cn("flex-1 pt-12 pb-12 bg-white flex flex-col h-screen", className)}>
       
       {/* ---------------------- CHAT HEADER ---------------------- */}
       <div className="h-16 border-b border-gray-200 px-6 flex items-center justify-between">
@@ -99,16 +93,17 @@ export default function ChatWindow({ className }: ChatWindowProps) {
             )}
           </div>
 
-          <div>
-            <h2 className="font-semibold text-gray-800">Travis Barker</h2>
-            <div className="flex items-center gap-2 text-xs text-gray-500">
-              <span>travis@stratalite</span>
-              <span>•</span>
-              <span>65520</span>
-              <span>•</span>
-              <span>22~01, 32 to 22~5~22</span>
-            </div>
-          </div>
+  <div className="flex flex-col leading-tight">
+  <h2 className="font-semibold text-gray-800">Travis Barker</h2>
+  <div className="flex flex-col text-xs text-gray-500">
+    <span className="text-blue-500">I need a Website...</span>
+    <div className="flex gap-2 mt-1">
+      <span>$4500</span>
+      <span>22-01-22 to 22-5-22</span>
+    </div>
+  </div>
+</div>
+
         </div>
 
         {/* RIGHT SIDE BUTTONS */}
@@ -116,12 +111,18 @@ export default function ChatWindow({ className }: ChatWindowProps) {
           <span className="text-sm font-medium text-green-500">Online</span>
 
           <div className="flex items-center gap-1 ml-4">
-            {/* Video Button */}
             <Button variant="ghost" size="icon" className="w-9 h-9">
               <Video className="w-4 h-4 text-gray-600" />
             </Button>
 
-            {/* 👉 Info Button */}
+            <Button variant="ghost" size="icon" className="w-9 h-9">
+              <FileText className="w-4 h-4 text-gray-600" />
+            </Button>
+
+            <Button variant="ghost" size="icon" className="w-9 h-9">
+              <Phone className="w-4 h-4 text-gray-600" />
+            </Button>
+
             <Button
               onClick={() => setShowInfo(true)}
               variant="ghost"
@@ -153,7 +154,6 @@ export default function ChatWindow({ className }: ChatWindowProps) {
               </Avatar>
             )}
 
-            {/* EACH MESSAGE BUBBLE */}
             <div
               className={cn(
                 "max-w-[60%] space-y-1",
@@ -234,12 +234,35 @@ export default function ChatWindow({ className }: ChatWindowProps) {
         </div>
       </div>
 
+      {/* ---------------------- PROGRESS BAR AREA ---------------------- */}
+           {/* --------- FOOTER BOXES --------- */}
+      <div className="grid grid-cols-2 gap-4 p-4 bg-[#fafafa] border-t">
+        
+        {/* Project Progress */}
+        <div className="bg-white p-4 rounded-xl shadow-sm border">
+          <p className="text-sm font-medium text-gray-700 mb-2">Project Progress</p>
+
+          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-2 bg-green-600 w-[65%]"></div>
+          </div>
+        </div>
+
+        {/* Next milestone */}
+        <div className="bg-white p-4 rounded-xl shadow-sm border">
+          <p className="text-sm font-medium text-gray-700">Next milestone</p>
+          <p className="font-semibold text-gray-900 mt-1">
+            Backend APIs • ₹25,000
+          </p>
+          <p className="text-xs text-gray-500">Due: 20 Nov</p>
+        </div>
+
+      </div>
+
       {/* ---------------------- INFO DRAWER ---------------------- */}
       {showInfo && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-end z-50">
           <div className="w-[380px] h-full bg-white shadow-xl p-6 flex flex-col">
 
-            {/* Header */}
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-lg font-semibold">Project Information</h2>
               <button
@@ -250,7 +273,6 @@ export default function ChatWindow({ className }: ChatWindowProps) {
               </button>
             </div>
 
-            {/* Body */}
             <div className="space-y-5">
 
               <div className="p-4 bg-gray-50 rounded-lg border">
@@ -275,7 +297,7 @@ export default function ChatWindow({ className }: ChatWindowProps) {
 
                 <Button
                   onClick={() => {
-                    window.location.href = "/awards"; // redirect
+                    window.location.href = "/awards";
                   }}
                   className="bg-blue-500 hover:bg-blue-600 text-white w-full"
                 >

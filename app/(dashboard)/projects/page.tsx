@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { DollarSign, Calendar, Star } from "lucide-react"
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DollarSign, Calendar, Star, Filter } from "lucide-react";
 
 const projects = [
   {
@@ -13,7 +13,7 @@ const projects = [
     title: "CAB APP DEVELOPMENT",
     category: "FLUTTER",
     description:
-      "I will design UI UX for mobile app with figma for ios Adarsh Group is venturing into homes Inspired by the millennial generation- Adarsh Greens, offering new Lifestyle, with the same Trust, Quality & Consistency.....",
+      "I will design UI UX for mobile app with figma for ios Adarsh Group is venturing into homes Inspired by the millennial generation...",
     budget: "$4500",
     dateRange: "22-01-22 to 22-01-22",
     proposals: 12,
@@ -27,7 +27,7 @@ const projects = [
     title: "CAB APP DEVELOPMENT",
     category: "FLUTTER",
     description:
-      "I will design UI UX for mobile app with figma for ios Adarsh Group is venturing into homes Inspired by the millennial generation- Adarsh Greens, offering new Lifestyle, with the same Trust, Quality & Consistency.....",
+      "I will design UI UX for mobile app with figma for ios Adarsh Group is venturing into homes Inspired by the millennial generation...",
     budget: "$4500",
     dateRange: "22-01-22 to 22-01-22",
     proposals: 12,
@@ -65,32 +65,164 @@ const projects = [
       },
     ],
   },
-]
+];
 
 export default function ProjectsPage() {
-  const [activeTab, setActiveTab] = useState("new")
+  const [activeTab, setActiveTab] = useState("new");
+  const [filters, setFilters] = useState({
+    search: "",
+    category: "",
+    budget: "",
+    status: "",
+  });
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters({ ...filters, [key]: value });
+  };
+
+  const getFilteredProjects = (statusFilter: string) => {
+    return projects
+      .filter((p) => (statusFilter ? p.status === statusFilter : true))
+      .filter((p) =>
+        p.title.toLowerCase().includes(filters.search.toLowerCase())
+      )
+      .filter((p) =>
+        filters.category ? p.category === filters.category : true
+      )
+      .filter((p) => {
+        if (!filters.budget) return true;
+        return Number(p.budget.replace("$", "")) <= Number(filters.budget);
+      });
+  };
 
   return (
-    <div className="p-8 pt-16">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Your projects</h1>
-        <p className="text-gray-500 mt-1">Here is a list of all the projects on which you have been working.</p>
+    <div className="p-8 pt-16 relative">
+      {/* ---------------- HEADER ---------------- */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Your projects</h1>
+          <p className="text-gray-500 mt-1">
+            Here is a list of all the projects on which you have been working.
+          </p>
+        </div>
+
+        {/* ---------------- FILTER ICON ---------------- */}
+        <div className="relative">
+          <Button
+            variant="outline"
+            className="flex items-center space-x-2"
+            onClick={() => setShowFilterPanel(!showFilterPanel)}
+          >
+            <Filter className="h-4 w-4" />
+            <span>Filter</span>
+          </Button>
+
+          {showFilterPanel && (
+            <div className="absolute right-0 mt-2 w-72 bg-white shadow-lg border rounded-lg p-4 z-50">
+              <h2 className="font-semibold mb-3">Filter Projects</h2>
+
+              <div className="space-y-3">
+                {/* Search */}
+                <div>
+                  <label className="text-sm font-medium">Search</label>
+                  <input
+                    type="text"
+                    placeholder="Search project..."
+                    value={filters.search}
+                    onChange={(e) =>
+                      handleFilterChange("search", e.target.value)
+                    }
+                    className="w-full mt-1 px-3 py-2 border rounded-md"
+                  />
+                </div>
+
+                {/* Category */}
+                <div>
+                  <label className="text-sm font-medium">Category</label>
+                  <select
+                    value={filters.category}
+                    onChange={(e) =>
+                      handleFilterChange("category", e.target.value)
+                    }
+                    className="w-full mt-1 px-3 py-2 border rounded-md"
+                  >
+                    <option value="">All</option>
+                    <option value="FLUTTER">Flutter</option>
+                    <option value="REACT">React</option>
+                    <option value="FIGMA">Figma</option>
+                  </select>
+                </div>
+
+                {/* Budget */}
+                <div>
+                  <label className="text-sm font-medium">Budget</label>
+                  <select
+                    value={filters.budget}
+                    onChange={(e) =>
+                      handleFilterChange("budget", e.target.value)
+                    }
+                    className="w-full mt-1 px-3 py-2 border rounded-md"
+                  >
+                    <option value="">Any</option>
+                    <option value="1000">Below $1000</option>
+                    <option value="5000">Below $5000</option>
+                    <option value="10000">Below $10000</option>
+                  </select>
+                </div>
+
+                {/* Status */}
+                <div>
+                  <label className="text-sm font-medium">Status</label>
+                  <select
+                    value={filters.status}
+                    onChange={(e) =>
+                      handleFilterChange("status", e.target.value)
+                    }
+                    className="w-full mt-1 px-3 py-2 border rounded-md"
+                  >
+                    <option value="">All</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Awarded">Awarded</option>
+                    <option value="Declined">Declined</option>
+                  </select>
+                </div>
+
+                {/* Apply Button */}
+                <div className="flex justify-end mt-2">
+                  <Button
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    onClick={() => setShowFilterPanel(false)}
+                  >
+                    Apply
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="new">New Project</TabsTrigger>
-          <TabsTrigger value="bookmarks">Bookmarks</TabsTrigger>
-          <TabsTrigger value="applied">Applied</TabsTrigger>
-          <TabsTrigger value="awarded">Awarded</TabsTrigger>
-          <TabsTrigger value="declined">Declined</TabsTrigger>
-          <TabsTrigger value="dispute">Dispute</TabsTrigger>
+      {/* ---------------- TABS ---------------- */}
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
+        <TabsList className="border-b mb-4 bg-transparent shadow-none">
+          <TabsTrigger value="new"
+           className="relative background-none px-3 py-2 text-gray-600 font-medium after:absolute after:-bottom-0.5 after:left-0 after:w-0 after:h-0.5 after:bg-green-500 after:transition-all data-[state=active]:after:w-full data-[state=active]:text-green-600 bg-transparent shadow-none">New Project</TabsTrigger>
+          <TabsTrigger value="bookmarks" className="relative background-none px-3 py-2 text-gray-600 font-medium after:absolute after:-bottom-0.5 after:left-0 after:w-0 after:h-0.5 after:bg-green-500 after:transition-all data-[state=active]:after:w-full data-[state=active]:text-green-600 bg-transparent shadow-none" >Bookmarks</TabsTrigger>
+          <TabsTrigger value="applied" className="relative background-none px-3 py-2 text-gray-600 font-medium after:absolute after:-bottom-0.5 after:left-0 after:w-0 after:h-0.5 after:bg-green-500 after:transition-all data-[state=active]:after:w-full data-[state=active]:text-green-600 bg-transparent shadow-none" >Applied</TabsTrigger>
+          <TabsTrigger value="awarded" className="relative background-none px-3 py-2 text-gray-600 font-medium after:absolute after:-bottom-0.5 after:left-0 after:w-0 after:h-0.5 after:bg-green-500 after:transition-all data-[state=active]:after:w-full data-[state=active]:text-green-600 bg-transparent shadow-none" >Awarded</TabsTrigger>
+          <TabsTrigger value="declined" className="relative background-none px-3 py-2 text-gray-600 font-medium after:absolute after:-bottom-0.5 after:left-0 after:w-0 after:h-0.5 after:bg-green-500 after:transition-all data-[state=active]:after:w-full data-[state=active]:text-green-600 bg-transparent shadow-none" >Declined</TabsTrigger>
+          <TabsTrigger value="dispute" className="relative background-none px-3 py-2 text-gray-600 font-medium after:absolute after:-bottom-0.5 after:left-0 after:w-0 after:h-0.5 after:bg-green-500 after:transition-all data-[state=active]:after:w-full data-[state=active]:text-green-600 bg-transparent shadow-none" >Dispute</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="new" className="space-y-6">
-          {projects
-            .filter((p) => p.status === "Pending")
-            .map((project) => (
+        {/* ---------------- NEW PROJECT TAB ---------------- */}
+        <TabsContent value="new" className="space-y-6 bg-transparent shadow-none p-0">
+          {getFilteredProjects("Pending").length ? (
+            getFilteredProjects("Pending").map((project) => (
               <Card key={project.id}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -100,7 +232,9 @@ export default function ProjectsPage() {
                         {project.category}
                       </Badge>
                     </div>
-                    <span className="text-sm text-gray-500">{project.proposals} Proposals</span>
+                    <span className="text-sm text-gray-500">
+                      {project.proposals} Proposals
+                    </span>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -116,208 +250,179 @@ export default function ProjectsPage() {
                     </div>
                     <Badge variant="pending">{project.status}</Badge>
                   </div>
-                  <div className="flex items-center justify-between pt-4 border-t">
-                    <div className="flex items-center space-x-4">
-                      <span className="text-sm font-medium">${project.budget.replace("$", "")}</span>
-                      <span className="text-sm text-gray-500">Amount</span>
-                      <Badge variant="pending">Pending</Badge>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Button variant="outline">Send Message</Button>
-                      <Button>View Your apply</Button>
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
-            ))}
+            ))
+          ) : (
+            <div className="text-center py-20 text-gray-500">
+              No projects found.
+            </div>
+          )}
         </TabsContent>
 
-        <TabsContent value="applied" className="space-y-6">
-          {projects
-            .filter((p) => p.status === "Pending")
-            .map((project) => (
-              <Card key={project.id}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-xl">{project.title}</CardTitle>
-                      <Badge variant="outline" className="mt-2">
-                        {project.category}
-                      </Badge>
-                    </div>
-                    <span className="text-sm text-gray-500">{project.proposals} Proposals</span>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-gray-600">{project.description}</p>
-                  <div className="flex items-center space-x-6 text-sm">
-                    <div className="flex items-center text-gray-600">
-                      <DollarSign className="h-4 w-4 mr-1" />
-                      {project.budget}
-                    </div>
-                    <div className="flex items-center text-gray-600">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      {project.dateRange}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between pt-4 border-t">
-                    <div className="flex items-center space-x-4">
-                      <span className="text-sm font-medium">${project.budget.replace("$", "")}</span>
-                      <span className="text-sm text-gray-500">Amount</span>
-                      <Badge variant="pending">Pending</Badge>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Button variant="outline">Send Message</Button>
-                      <Button>View Your apply</Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-        </TabsContent>
-
-       <TabsContent value="awarded" className="space-y-6">
-  {projects
-    .filter((p) => p.status === "Awarded")
-    .map((project) => {
-      const [showMilestones, setShowMilestones] = useState(false)
-
-      return (
-        <div key={project.id} className="space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-xl">{project.title}</CardTitle>
-                  <Badge variant="outline" className="mt-2">
-                    {project.category}
-                  </Badge>
-                </div>
-                <span className="text-sm text-gray-500">{project.proposals} Proposals</span>
-              </div>
-            </CardHeader>
-
-            <CardContent className="space-y-4">
-              <p className="text-sm text-gray-600">{project.description}</p>
-
-              <div className="flex items-center space-x-6 text-sm">
-                <div className="flex items-center text-gray-600">
-                  <Calendar className="h-4 w-4 mr-1" />
-                  Closed - {project.closed}
-                </div>
-
-                <div className="flex items-center text-yellow-500">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-current" />
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between pt-4 border-t">
-                <Button variant="outline">Send Message</Button>
-
-                <Button
-                  className="bg-green-500 hover:bg-green-600"
-                  onClick={() => setShowMilestones(!showMilestones)}
-                >
-                  {showMilestones ? "Hide Payment Details" : "Check Payment Details"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* SHOW MILESTONES ONLY WHEN TOGGLED */}
-          {showMilestones && project.milestones && (
-            <Card>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  {project.milestones.map((milestone, index) => (
-                    <div
-                      key={index}
-                      className={`flex items-center justify-between p-4 rounded-lg ${
-                        milestone.completed
-                          ? "bg-green-100 border-2 border-green-500"
-                          : "bg-red-100 border-2 border-red-400"
-                      }`}
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="h-3 w-3 rounded-full bg-gray-400" />
+        {/* ---------------- AWARDED TAB ---------------- */}
+        <TabsContent value="awarded" className="space-y-6">
+          {getFilteredProjects("Awarded").length ? (
+            getFilteredProjects("Awarded").map((project) => {
+              const [showMilestones, setShowMilestones] = useState(false);
+              return (
+                <div key={project.id} className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
                         <div>
-                          <h4
-                            className={`font-semibold ${
-                              milestone.completed ? "text-green-800" : "text-red-800"
-                            }`}
-                          >
-                            {milestone.name}
-                          </h4>
-                          <p
-                            className={`text-sm ${
-                              milestone.completed ? "text-green-700" : "text-red-700"
-                            }`}
-                          >
-                            {milestone.description}
-                          </p>
+                          <CardTitle className="text-xl">
+                            {project.title}
+                          </CardTitle>
+                          <Badge variant="outline" className="mt-2">
+                            {project.category}
+                          </Badge>
+                        </div>
+                        <span className="text-sm text-gray-500">
+                          {project.proposals} Proposals
+                        </span>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-sm text-gray-600">
+                        {project.description}
+                      </p>
+                      <div className="flex items-center space-x-6 text-sm">
+                        <div className="flex items-center text-gray-600">
+                          <Calendar className="h-4 w-4 mr-1" />
+                          Closed - {project.closed}
+                        </div>
+                        <div className="flex items-center text-yellow-500">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className="h-4 w-4 fill-current" />
+                          ))}
                         </div>
                       </div>
 
-                      <div className="text-right">
-                        <p
-                          className={`font-semibold ${
-                            milestone.completed ? "text-green-800" : "text-red-800"
-                          }`}
+                      <div className="flex items-center justify-between pt-4 border-t">
+                        <Button variant="outline">Send Message</Button>
+                        <Button
+                          className="bg-green-500 hover:bg-green-600"
+                          onClick={() => setShowMilestones(!showMilestones)}
                         >
-                          {milestone.amount}
-                        </p>
-                        <p
-                          className={`text-sm ${
-                            milestone.completed ? "text-green-700" : "text-red-700"
-                          }`}
-                        >
-                          {milestone.date}
-                        </p>
+                          {showMilestones
+                            ? "Hide Payment Details"
+                            : "Check Payment Details"}
+                        </Button>
                       </div>
-                    </div>
-                  ))}
+                    </CardContent>
+                  </Card>
+
+                  {/* ------------------------- MILESTONES TIMELINE ------------------------- */}
+                  {showMilestones && project.milestones && (
+                    <Card>
+                      <CardContent className="p-6 relative">
+                        {/* Vertical line */}
+                        <div
+                          className="absolute left-12 top-4 bottom-4 w-1"
+                          style={{
+                            background: `linear-gradient(to bottom, ${project.milestones
+                              .map((m) => (m.completed ? "#22c55e" : "#ef4444"))
+                              .join(", ")})`,
+                          }}
+                        ></div>
+
+                        <div className="flex flex-col space-y-8">
+                          {project.milestones.map((m, index) => (
+                            <div key={index} className="relative pl-12">
+                              {/* Circle */}
+                              <div
+                                className={`absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 rounded-full border-2`}
+                                style={{
+                                  backgroundColor: m.completed
+                                    ? "#22c55e"
+                                    : "#ef4444",
+                                  borderColor: m.completed
+                                    ? "#15803d"
+                                    : "#b91c1c",
+                                }}
+                              ></div>
+
+                              {/* Milestone Card */}
+                              <div
+                                className={`flex flex-col w-full p-4 rounded-lg border`}
+                                style={{
+                                  backgroundColor: m.completed
+                                    ? "#dcfce7"
+                                    : "#fee2e2",
+                                  borderColor: m.completed
+                                    ? "#22c55e"
+                                    : "#ef4444",
+                                }}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <h4
+                                    className="font-semibold"
+                                    style={{
+                                      color: m.completed
+                                        ? "#15803d"
+                                        : "#b91c1c",
+                                    }}
+                                  >
+                                    {m.name}
+                                  </h4>
+                                  <p
+                                    className="font-semibold"
+                                    style={{
+                                      color: m.completed
+                                        ? "#15803d"
+                                        : "#b91c1c",
+                                    }}
+                                  >
+                                    {m.amount}
+                                  </p>
+                                </div>
+                                <p
+                                  className="text-sm mt-1"
+                                  style={{
+                                    color: m.completed ? "#166534" : "#b91c1c",
+                                  }}
+                                >
+                                  {m.description}
+                                </p>
+                                <p
+                                  className="text-xs mt-1"
+                                  style={{
+                                    color: m.completed ? "#15803d" : "#b91c1c",
+                                  }}
+                                >
+                                  {m.date}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
+              );
+            })
+          ) : (
+            <div className="text-center py-20 text-gray-500">
+              No projects found.
+            </div>
           )}
-        </div>
-      )
-    })}
-</TabsContent>
-
-
-        <TabsContent value="declined" className="flex flex-col items-center justify-center py-20">
-          <div className="text-center">
-            <div className="inline-block p-8 bg-blue-50 rounded-full mb-4">
-              <div className="text-6xl">📋</div>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">NO DATA</h3>
-            <p className="text-gray-500">You don't have any declined projects</p>
-          </div>
         </TabsContent>
 
-        <TabsContent value="dispute" className="flex flex-col items-center justify-center py-20">
-          <div className="text-center">
-            <div className="inline-block p-8 bg-blue-50 rounded-full mb-4">
-              <div className="text-6xl">📋</div>
+        {/* ---------------- OTHER TABS ---------------- */}
+        {["declined", "dispute", "bookmarks", "applied"].map((tab) => (
+          <TabsContent
+            key={tab}
+            value={tab}
+           className="flex flex-col items-center justify-center py-20 "
+          >
+            <div className="text-center">
+              <h3 className="text-2xl font-bold">NO DATA</h3>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">NO DATA</h3>
-            <p className="text-gray-500">You don't have any projects in dispute</p>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="bookmarks" className="flex flex-col items-center justify-center py-20">
-          <div className="text-center">
-            <div className="inline-block p-8 bg-blue-50 rounded-full mb-4">
-              <div className="text-6xl">⭐</div>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">NO DATA</h3>
-            <p className="text-gray-500">You haven't bookmarked any projects yet</p>
-          </div>
-        </TabsContent>
+          </TabsContent>
+        ))}
       </Tabs>
     </div>
-  )
+  );
 }
