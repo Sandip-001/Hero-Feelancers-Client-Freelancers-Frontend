@@ -17,6 +17,32 @@ export default function WorkStreamRightBar() {
 
   return (
     <aside className="w-full px-4 py-4 space-y-4">
+
+    {/* ---------------------- PROGRESS BAR AREA ---------------------- */}
+           {/* --------- FOOTER BOXES --------- */}
+      <div className="grid grid-rows-2 gap-2 bg-[#fafafa] border-t">
+        
+        {/* Project Progress */}
+        <div className="bg-white p-4 rounded-xl shadow-sm border">
+          <p className="text-sm font-medium text-gray-700 mb-2">Project Progress - 60%</p>
+
+          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-2 bg-green-600 w-[65%]"></div>
+          </div>
+        </div>
+
+        {/* Next milestone */}
+        <div className="bg-white p-4 rounded-xl shadow-sm border">
+          <p className="text-sm font-medium text-gray-700">Next milestone</p>
+          <p className="font-semibold text-gray-900 mt-1">
+            Backend APIs • ₹25,000
+          </p>
+          <p className="text-xs text-gray-500">Due: 20 Nov</p>
+        </div>
+
+      </div>
+
+
       {/* Relationship Manager */}
       <div className={boxStyle}>
         <div className="flex items-center justify-between">

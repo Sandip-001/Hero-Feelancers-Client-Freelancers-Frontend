@@ -61,6 +61,41 @@ const chatMessages: ChatMessage[] = [
     type: "link",
     linkUrl: "https://dribbble.com/shots/17752251-ui-kit-design/am",
   },
+  {
+    id: "5",
+    sender: "contact",
+    content: "Hi! i made new UI-kit for project, check it late",
+    time: "16:42",
+    type: "text",
+  },
+  {
+    id: "6",
+    sender: "contact",
+    content: "",
+    time: "16:42",
+    type: "image",
+    imageUrl: "/chat-preview.jpg",
+    linkPreview: {
+      title: "Car sharing service Mobile App",
+      description: "Jan V1",
+      image: "/car-sharing-preview.jpg",
+    },
+  },
+  {
+    id: "7",
+    sender: "user",
+    content: "Thank you for work, see you!",
+    time: "16:42",
+    type: "text",
+  },
+  {
+    id: "8",
+    sender: "contact",
+    content: "https://dribbble.com/shots/17752251-ui-kit-design/am",
+    time: "16:42",
+    type: "link",
+    linkUrl: "https://dribbble.com/shots/17752251-ui-kit-design/am",
+  },
 ];
 
 export default function ChatWindow({ className }: ChatWindowProps) {
@@ -77,7 +112,7 @@ export default function ChatWindow({ className }: ChatWindowProps) {
   };
 
   return (
-    <div className={cn("flex-1 pt-12 pb-12 bg-white flex flex-col h-screen", className)}>
+    <div className={cn("flex-1 bg-white flex flex-col h-[630px]", className)}>
       
       {/* ---------------------- CHAT HEADER ---------------------- */}
       <div className="h-16 border-b border-gray-200 px-6 flex items-center justify-between">
@@ -235,30 +270,7 @@ export default function ChatWindow({ className }: ChatWindowProps) {
         </div>
       </div>
 
-      {/* ---------------------- PROGRESS BAR AREA ---------------------- */}
-           {/* --------- FOOTER BOXES --------- */}
-      <div className="grid grid-cols-2 gap-4 p-4 bg-[#fafafa] border-t">
-        
-        {/* Project Progress */}
-        <div className="bg-white p-4 rounded-xl shadow-sm border">
-          <p className="text-sm font-medium text-gray-700 mb-2">Project Progress</p>
-
-          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div className="h-2 bg-green-600 w-[65%]"></div>
-          </div>
-        </div>
-
-        {/* Next milestone */}
-        <div className="bg-white p-4 rounded-xl shadow-sm border">
-          <p className="text-sm font-medium text-gray-700">Next milestone</p>
-          <p className="font-semibold text-gray-900 mt-1">
-            Backend APIs • ₹25,000
-          </p>
-          <p className="text-xs text-gray-500">Due: 20 Nov</p>
-        </div>
-
-      </div>
-
+      
       {/* ---------------------- INFO DRAWER ---------------------- */}
       {showInfo && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-end z-50">

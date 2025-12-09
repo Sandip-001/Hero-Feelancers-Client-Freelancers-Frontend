@@ -22,10 +22,9 @@ export function Header({
 }: HeaderProps) {
   return (
     <header 
-      // 2. Remove the inline style and use dynamic logic for the 'left' position
-      // 3. Added 'transition-all duration-300' for smooth animation
+
       className={`fixed right-0 top-0 z-30 h-16 border-b bg-white transition-all duration-300 ease-in-out ${
-        collapsed ? "left-[80px]" : "left-[256px]"
+        collapsed ? "left-[80px]" : "left-[285px]"
       }`}
     >
       <div className="flex h-full items-center justify-between px-6">

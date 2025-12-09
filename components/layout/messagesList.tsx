@@ -79,7 +79,7 @@ export default function MessageList({ className, onSelectMessage, selectedMessag
   const [sortBy, setSortBy] = React.useState('Newest');
 
   return (
-    <div className={cn(" pt-12 bg-white border-r border-gray-200 flex flex-col h-full", className)}>
+    <div className={cn("  bg-white border-r border-gray-200 flex flex-col h-full", className)}>
 
       {/* Header */}
       <div className="p-4 border-b border-gray-200">

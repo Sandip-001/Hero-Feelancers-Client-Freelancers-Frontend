@@ -20,7 +20,7 @@ export default function RightSidebar() {
         top-0 
         right-0 
         h-full 
-        w-80            /* w-80 = 20rem, matching the dashboard padding */
+        w-[22rem]            /* w-80 = 20rem, matching the dashboard padding */
         border-l 
         bg-white 
         px-5 

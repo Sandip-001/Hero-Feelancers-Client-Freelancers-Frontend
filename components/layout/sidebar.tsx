@@ -118,7 +118,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
 
   useEffect(() => setMobileOpen(false), [pathname]);
 
-  const sidebarWidth = collapsed ? "w-20" : "w-64";
+  const sidebarWidth = collapsed ? "w-25" : "w-72";
 
   const handleMenuClick = (item: any) => {
     if (item.shouldCollapse) setCollapsed(true);
