@@ -115,9 +115,9 @@ const WaveBackground = ({ color = "fill-white/10" }: { color?: string }) => (
 
 export default function DashboardPage() {
   return (
-    <div className="flex bg-gray-50 min-h-screen">
+    <div className="flex bg-gray-50 min-h-screen p-3 xl:p-6 lg:pl-10">
       {/* MAIN CONTENT */}
-      <div className="flex-1 px-8  pr-[22rem] space-y-10">
+      <div className="flex-1 xl:px-8 pb-24 xl:pr-[22rem] space-y-10">
         {/* Welcome Section */}
         <div>
           <h1 className="text-3xl font-semibold text-gray-900">
@@ -131,11 +131,11 @@ export default function DashboardPage() {
         {/* Stats Cards - Updated Grid & Styling */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           
-          <Card className="relative md:col-span-1 bg-[#6590FF] text-white rounded-2xl shadow-lg border-none overflow-hidden h-48">
+          <Card className="relative md:col-span-1 bg-[#6590FF] text-white rounded-2xl shadow-lg border-none overflow-hidden h-50">
             <WaveBackground color="fill-white/10" />
             <CardHeader className="relative z-10 pb-0 pt-6 px-6">
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white/20 rounded-md backdrop-blur-sm">
+              <div className="flex flex-wrap gap-2 items-center justify-between">
+                <span className="flex items-center gap-1 px-4 py-2 text-sm font-medium bg-white/20 rounded-md backdrop-blur-sm">
                   <Radio className="w-4 h-4" /> Live projects
                 </span>
 
@@ -157,7 +157,7 @@ export default function DashboardPage() {
           </Card>
 
           {/* In Progress - Regular Card */}
-          <Card className="relative md:col-span-1 bg-[#65CAFF] text-white rounded-2xl shadow-lg border-none overflow-hidden h-48">
+          <Card className="relative md:col-span-1 bg-[#65CAFF] text-white rounded-2xl shadow-lg border-none overflow-hidden h-50">
             <WaveBackground color="fill-white/10" />
             <CardHeader className="relative z-10 pb-0 pt-6 px-6">
               <div className="flex items-center justify-between">
@@ -176,7 +176,7 @@ export default function DashboardPage() {
           </Card>
 
           {/* Completed Projects - Regular Card */}
-          <Card className="relative md:col-span-1 bg-[#AD65FF] text-white rounded-2xl shadow-lg border-none overflow-hidden h-48">
+          <Card className="relative md:col-span-1 bg-[#AD65FF] text-white rounded-2xl shadow-lg border-none overflow-hidden h-50">
             <WaveBackground color="fill-white/10" />
             <CardHeader className="relative z-10 pb-0 pt-6 px-6">
               <div className="flex items-center justify-between">

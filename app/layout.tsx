@@ -6,7 +6,7 @@ import { SidebarProvider } from "@/components/layout/SidebarContext"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Stratalite - Freelance Project Management Platform",
+  title: "HeroFreelancer - Freelance Project Management Platform",
   description: "Manage your freelance projects, clients, and proposals with ease",
 }
 

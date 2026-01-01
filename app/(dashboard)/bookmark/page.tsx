@@ -1,14 +1,12 @@
 "use client";
 import React, { useState } from "react";
 import ProjectLayout from "@/components/projects/ProjectLayout";
-import { INITIAL_PROJECTS, Project } from "@/components/projects/data";
-import { EnhancedNewProjectCard, ProposalView } from "@/components/projects/ui-blocks"; // Assume you extracted these
+import { INITIAL_PROJECTS } from "@/components/projects/data";
+import { EnhancedNewProjectCard, ProposalView } from "@/components/projects/ui-blocks";
 
-export default function NewProjectsPage() {
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  
-  // Filter only 'Pending' projects
-  const projects = INITIAL_PROJECTS.filter(p => p.status === "Pending");
+export default function BookmarksPage() {
+  const [selectedProject, setSelectedProject] = useState(null);
+  const projects = INITIAL_PROJECTS.filter(p => p.isBookmarked);
 
   if (selectedProject) {
     return (
@@ -20,7 +18,7 @@ export default function NewProjectsPage() {
 
   return (
     <ProjectLayout>
-      <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
+      <div className="space-y-4">
         {projects.map((project) => (
           <EnhancedNewProjectCard 
             key={project.id} 
@@ -29,6 +27,7 @@ export default function NewProjectsPage() {
             onViewDetails={setSelectedProject} 
           />
         ))}
+        {projects.length === 0 && <div className="text-center py-10 text-gray-500">No saved projects.</div>}
       </div>
     </ProjectLayout>
   );

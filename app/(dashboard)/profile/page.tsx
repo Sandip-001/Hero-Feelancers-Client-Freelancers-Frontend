@@ -155,7 +155,7 @@ export default function FreelancerProfile() {
   const displayedProjects = filter === "All" ? projects : projects.filter(p => p.category === filter);
 
   return (
-    <div className="bg-gray-50 min-h-screen text-gray-900 font-sans relative pb-12">
+    <div className="bg-gray-50 min-h-screen text-gray-900 font-sans relative p-6">
       
       {/* ========================================= */}
       {/* FULL EDIT PROFILE MODAL */}
@@ -394,7 +394,7 @@ export default function FreelancerProfile() {
       {/* MAIN PROFILE PAGE */}
       {/* ========================================= */}
 
-      <main className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <main className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* LEFT SIDEBAR */}
         <aside className="lg:col-span-4 space-y-6">

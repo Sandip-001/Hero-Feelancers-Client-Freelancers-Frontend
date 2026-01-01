@@ -20,10 +20,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           We use the same width logic here (pl-20 vs pl-64) */}
       <main 
         className={`pt-16 transition-all duration-300 ease-in-out ${
-          collapsed ? "pl-20" : "pl-64"
+          collapsed ? "lg:ml-[80px]" : "lg:ml-[285px]"
         }`}
       >
-        <div className="p-6">
+        <div>
           {children}
         </div>
       </main>
