@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, use } from "react"
 import { 
   Search, 
   Bell, 
@@ -20,6 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
 import { usePathname } from "next/navigation" // Added for path detection
 import { cn } from "@/lib/utils"
+import { useGetMeQuery } from "@/app/redux/api/auth.api"
 
 interface HeaderProps {
   userName?: string
@@ -80,6 +81,8 @@ export function Header({
   userImage, 
   collapsed 
 }: HeaderProps) {
+
+  const {data} = useGetMeQuery();
   
   const pathname = usePathname(); // Get current route
   const isWorkstreamPage = pathname === "/workstreams"; // Check if we are in messages
@@ -291,15 +294,15 @@ export function Header({
               className="flex items-center gap-2 lg:gap-3 hover:bg-gray-50 rounded-full p-1 pr-2 transition-all cursor-pointer"
             >
               <Avatar className="h-8 w-8 lg:h-9 lg:w-9 border border-gray-200">
-                <AvatarImage src={userImage} alt={userName} />
+                <AvatarImage src={data?.user?.profileImage} alt={data?.user?.fullName} />
                 <AvatarFallback className="bg-[#14A9F9] text-white">
-                  {userName.substring(0, 2).toUpperCase()}
+                  {data?.user?.fullName.substring(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               
               <div className="hidden lg:flex flex-col text-left">
-                <span className="text-sm font-semibold text-gray-800 leading-none">{userName}</span>
-                <span className="text-xs text-gray-500 mt-1 leading-none">{userRole}</span>
+                <span className="text-sm font-semibold text-gray-800 leading-none">{data?.user?.fullName}</span>
+                <span className="text-xs text-gray-500 mt-1 leading-none">{data?.user?.userType}</span>
               </div>
               
               <ChevronRight className="hidden lg:block h-4 w-4 text-gray-400" />

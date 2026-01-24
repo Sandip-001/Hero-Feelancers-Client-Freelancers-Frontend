@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
 
 import {
@@ -29,6 +29,8 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useLogoutFreelancerMutation } from "@/app/redux/api/freelancerAuth.api";
+import { toast } from "sonner";
 
 type SidebarProps = {
   collapsed: boolean;
@@ -84,6 +86,8 @@ const pricingPlans = [
 export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const [logout] = useLogoutFreelancerMutation();
   
 
   // Close mobile drawer on route change
@@ -96,6 +100,17 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       setCollapsed(true);
     }
   };
+
+  const handleLogout = async () => {
+      try {
+        await logout().unwrap();
+        window.location.href = "/login";
+        toast.success("Logged out successfully");
+      } catch (error) {
+        toast.error("Logout failed");
+        console.error("Logout failed:", error);
+      }
+    };
 
   // --- RENDER HELPERS ---
 
@@ -243,7 +258,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
           {/* LOGOUT FOOTER */}
           <div className="p-4 border-t bg-white shrink-0">
             <button 
-              onClick={() => alert("Logging out...")}
+              onClick={handleLogout}
               className={cn(
                 "flex items-center w-full rounded-xl text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors",
                 collapsed ? "justify-center py-2" : "px-3 py-2.5 space-x-3"
@@ -321,7 +336,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
             </div>
 
              <div className="p-4 border-t bg-gray-50">
-               <button onClick={() => alert("Logging out")} className="flex items-center justify-center space-x-2 text-gray-600 hover:text-red-600 w-full px-4 py-3 bg-white border rounded-xl shadow-sm">
+               <button onClick={handleLogout} className="flex items-center justify-center space-x-2 text-gray-600 hover:text-red-600 w-full px-4 py-3 bg-white border rounded-xl shadow-sm">
                  <LogOut className="h-5 w-5" />
                  <span className="font-medium text-sm">Log Out</span>
                </button>

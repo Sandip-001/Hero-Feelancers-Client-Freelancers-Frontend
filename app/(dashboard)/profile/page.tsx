@@ -1,10 +1,13 @@
 "use client";
+import { useGetMeQuery } from "@/app/redux/api/auth.api";
 import { Camera, CheckCircle, Filter, MapPin, Plus, Star, Upload, X, Trash2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
 export default function FreelancerProfile() {
   const [open, setOpen] = useState(false);
   const [projectModalOpen, setProjectModalOpen] = useState(false);
+
+  const {data, isLoading, error} = useGetMeQuery();
 
   // Centralized Profile State
   const [profile, setProfile] = useState({
@@ -404,7 +407,7 @@ export default function FreelancerProfile() {
             <div className="flex items-start gap-5">
               <div className="relative shrink-0">
                 <img
-                  src={profile.avatar}
+                  src={data?.user?.profileImage}
                   alt="avatar"
                   className="w-24 h-24 rounded-full object-cover border-4 border-gray-50 shadow-sm"
                   onError={(e) => (e.target as HTMLImageElement).src = "https://via.placeholder.com/150"}
@@ -413,18 +416,18 @@ export default function FreelancerProfile() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h1 className="text-xl font-bold text-gray-900 truncate">{profile.name}</h1>
+                  <h1 className="text-xl font-bold text-gray-900 truncate">{data?.user?.fullName}</h1>
                   {profile.verified && (
                     <CheckCircle size={16} className="text-[#0E9F6E] shrink-0" fill="#E1FCEF" />
                   )}
                 </div>
 
                 <p className="text-sm text-gray-500 mb-3 truncate">
-                  {profile.title}
+                  {data?.user?.about}
                 </p>
                 <div className="flex items-center gap-1 text-sm text-gray-500 mb-3">
                    <MapPin size={14} />
-                   {profile.location}
+                   {data?.user?.address}
                 </div>
               </div>
             </div>

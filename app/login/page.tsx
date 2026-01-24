@@ -4,19 +4,49 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { User, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { useLoginFreelancerMutation } from "../redux/api/freelancerAuth.api";
+import { useLoginClientMutation } from "../redux/api/clientAuth.api";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [userType, setUserType] = useState<"freelancer" | "client">(
+    "freelancer",
+  );
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const [loginFreelancer, { isLoading: freelancerLoading }] =
+    useLoginFreelancerMutation();
+
+  const [loginClient, { isLoading: clientLoading }] = useLoginClientMutation();
+
+  const isLoading = freelancerLoading || clientLoading;
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      alert("Login logic goes here!");
-    }, 1500);
+
+    try {
+      let result;
+
+      if (userType === "client") {
+        result = await loginClient({ email, password }).unwrap();
+      } else {
+        result = await loginFreelancer({ email, password }).unwrap();
+      }
+
+      toast.success(result.message || "Login successful");
+
+      if (result.user.role === "client") {
+        router.push("/client-dashboard");
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Login failed");
+    }
   };
 
   return (
@@ -24,29 +54,40 @@ export default function LoginPage() {
       {/* Minimal Header */}
       <div className="py-6 px-8">
         <Link href="/" className="flex items-center gap-2 w-fit">
-          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">HF</div>
-          <span className="text-xl font-bold text-gray-700">HeroFreelancer</span>
+          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
+            HF
+          </div>
+          <span className="text-xl font-bold text-gray-700">
+            HeroFreelancer
+          </span>
         </Link>
       </div>
 
       <div className="flex-1 flex items-center justify-center px-4 pb-20">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-100 overflow-hidden"
         >
           <div className="p-8">
-            <h2 className="text-2xl font-bold text-center text-gray-800 mb-8">Log in to HeroFreelancer</h2>
+            <h2 className="text-2xl font-bold text-center text-gray-800 mb-8">
+              Log in to HeroFreelancer
+            </h2>
 
             <form onSubmit={handleLogin} className="space-y-5">
               {/* Email/Username Field */}
               <div className="space-y-1">
                 <div className="relative">
-                  <User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input 
-                    type="text" 
-                    placeholder="Username or Email" 
+                  <User
+                    size={18}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Username or Email"
                     className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
                   />
                 </div>
@@ -55,14 +96,19 @@ export default function LoginPage() {
               {/* Password Field */}
               <div className="space-y-1">
                 <div className="relative">
-                  <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input 
-                    type={showPassword ? "text" : "password"} 
-                    placeholder="Password" 
+                  <Lock
+                    size={18}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password"
                     className="w-full pl-10 pr-10 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     required
                   />
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
@@ -72,8 +118,20 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <button 
-                type="submit" 
+              {/* USER TYPE */}
+              <select
+                value={userType}
+                onChange={(e) =>
+                  setUserType(e.target.value as "client" | "freelancer")
+                }
+                className="w-full border px-4 py-3 rounded-lg"
+              >
+                <option value="freelancer">Freelancer</option>
+                <option value="client">Client</option>
+              </select>
+
+              <button
+                type="submit"
                 disabled={isLoading}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-full transition-all flex items-center justify-center gap-2"
               >
@@ -96,19 +154,33 @@ export default function LoginPage() {
 
             <div className="space-y-3">
               <button className="w-full bg-white border border-gray-300 text-gray-700 font-medium py-2.5 rounded-full hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
-                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
-                 Continue with Google
+                <img
+                  src="https://www.svgrepo.com/show/475656/google-color.svg"
+                  alt="Google"
+                  className="w-5 h-5"
+                />
+                Continue with Google
               </button>
               <button className="w-full bg-white border border-gray-300 text-gray-700 font-medium py-2.5 rounded-full hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
-                 <img src="https://www.svgrepo.com/show/503173/apple-logo.svg" alt="Apple" className="w-7 h-7" />
-                 Continue with Apple
+                <img
+                  src="https://www.svgrepo.com/show/503173/apple-logo.svg"
+                  alt="Apple"
+                  className="w-7 h-7"
+                />
+                Continue with Apple
               </button>
             </div>
           </div>
-          
+
           <div className="bg-gray-50 p-6 text-center border-t border-gray-100">
             <p className="text-sm text-gray-600">
-              Don't have an account? <Link href="/signup" className="text-blue-600 font-semibold hover:underline">Sign Up</Link>
+              Don't have an account?{" "}
+              <Link
+                href="/signup"
+                className="text-blue-600 font-semibold hover:underline"
+              >
+                Sign Up
+              </Link>
             </p>
           </div>
         </motion.div>

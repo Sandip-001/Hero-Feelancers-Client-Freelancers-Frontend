@@ -25,6 +25,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { useGetMeQuery } from "@/app/redux/api/auth.api";
 
 // --- Mock Data ---
 const CLIENT_PROFILE = {
@@ -74,6 +75,8 @@ const JOB_HISTORY = [
 export default function ClientProfilePage() {
   const [activeTab, setActiveTab] = useState("overview");
 
+   const { data } = useGetMeQuery();
+
   return (
     <div className="min-h-screen bg-slate-50/50 px-0 py-6 sm:px-6 lg:p-10 space-y-8 font-sans">
       <div className="max-w-7xl mx-auto">
@@ -90,7 +93,7 @@ export default function ClientProfilePage() {
                 <div className="relative shrink-0 mx-auto md:mx-0">
                   <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl bg-white p-1 shadow-xl">
                     <div className="w-full h-full bg-slate-100 rounded-xl flex items-center justify-center text-indigo-600 font-bold text-3xl border border-slate-100">
-                      {CLIENT_PROFILE.name.charAt(0)}
+                      {data?.user?.fullName.charAt(0)}
                     </div>
                   </div>
                   <div className="absolute -bottom-1 -right-1 bg-emerald-500 p-1.5 rounded-full border-4 border-white shadow-lg" title="Online">
@@ -102,7 +105,7 @@ export default function ClientProfilePage() {
                 <div className="flex-1 text-center md:text-left space-y-2">
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
                     <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight">
-                      {CLIENT_PROFILE.name}
+                      {data?.user?.fullName}
                     </h1>
                     <Badge className="bg-blue-50 text-blue-700 border-blue-100 px-3 py-1 shadow-none flex items-center gap-1">
                       <ShieldCheck className="w-3.5 h-3.5" /> {CLIENT_PROFILE.verification}
