@@ -1,8 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { usePathname } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import {
@@ -44,8 +44,6 @@ const menuItems = [
   { icon: FileText, label: "Projects", href: "/projects", shouldCollapse: true },
   { icon: MessageCircleMore, label: "Workstreams", href: "/workstreams", shouldCollapse: true },
   { icon: Calendar, label: "Calendar", href: "/calendar" },
-  // { icon: Send, label: "Proposal Sent", href: "/proposals", badge: 3, shouldCollapse: true },
-  // { icon: Star, label: "Bookmarks", href: "/bookmarks" },
   { icon: Contact, label: "Contacts", href: "/contacts" },
   { icon: CreditCard, label: "Payment History", href: "/payments" },
   { icon: CircleUserRound, label: "Profile", href: "/profile" },
@@ -55,40 +53,12 @@ const promotionItems = [
   { icon: Megaphone, label: "Promotions", href: "/promotions" },
 ];
 
-const pricingPlans = [
-  {
-    name: "Basic",
-    price: "Free",
-    period: "forever",
-    description: "Essential tools to start your journey.",
-    features: ["10 Connects/mo", "Basic Profile", "Standard Support", "Payment Protection"],
-    current: true,
-  },
-  {
-    name: "Freelancer Pro",
-    price: "$14.99",
-    period: "/month",
-    description: "Power up your career with exclusive tools.",
-    features: ["80 Connects/mo", "View Competitor Bids", "Priority Support", "Custom Profile URL", "0% Service Fee on tips"],
-    recommended: true,
-  },
-  {
-    name: "Agency Plus",
-    price: "$29.99",
-    period: "/month",
-    description: "Built for teams scaling their operations.",
-    features: ["Unlimited Team Members", "Agency Insights", "Dedicated Account Manager", "API Access", "White-label Reports"],
-  }
-];
-
-// --- COMPONENTS ---
-
 export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const [logout] = useLogoutFreelancerMutation();
-  
 
   // Close mobile drawer on route change
   useEffect(() => setMobileOpen(false), [pathname]);
@@ -102,15 +72,22 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   };
 
   const handleLogout = async () => {
-      try {
-        await logout().unwrap();
-        window.location.href = "/login";
-        toast.success("Logged out successfully");
-      } catch (error) {
-        toast.error("Logout failed");
-        console.error("Logout failed:", error);
-      }
-    };
+    try {
+      await logout().unwrap();
+      
+      // Clear localStorage
+      localStorage.removeItem('isLoggedIn');
+      localStorage.removeItem('userType');
+      
+      toast.success("Logged out successfully");
+      
+      // Redirect to home page
+      router.push('/');
+    } catch (error) {
+      toast.error("Logout failed");
+      console.error("Logout failed:", error);
+    }
+  };
 
   // --- RENDER HELPERS ---
 
@@ -185,14 +162,6 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                       {!collapsed && (
                         <span className="flex-1 font-medium text-sm truncate">{item.label}</span>
                       )}
-                      {/* {!collapsed && item.badge && (
-                        <Badge 
-                          variant="secondary" 
-                          className="bg-blue-100 text-blue-700 hover:bg-blue-200 ml-auto border-none"
-                        >
-                          {item.badge}
-                        </Badge>
-                      )} */}
                     </Link>
                   );
                 })}
@@ -203,23 +172,23 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
             {!collapsed && (
               <div className="px-3 mt-6">
                 <Link href="/subscription">
-                <button
-                  className="relative w-full overflow-hidden p-4 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-left group hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
-                >
-                  {/* Decorative circles */}
-                  <div className="absolute top-0 right-0 -mt-2 -mr-2 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
-                  <div className="absolute bottom-0 left-0 -mb-2 -ml-2 w-12 h-12 bg-white/10 rounded-full blur-lg"></div>
-                  
-                  <div className="relative z-10 flex items-center gap-3 mb-1">
-                    <div className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg shadow-inner">
-                      <Crown className="w-4 h-4 text-white" />
+                  <button
+                    className="relative w-full overflow-hidden p-4 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-left group hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+                  >
+                    {/* Decorative circles */}
+                    <div className="absolute top-0 right-0 -mt-2 -mr-2 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
+                    <div className="absolute bottom-0 left-0 -mb-2 -ml-2 w-12 h-12 bg-white/10 rounded-full blur-lg"></div>
+                    
+                    <div className="relative z-10 flex items-center gap-3 mb-1">
+                      <div className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg shadow-inner">
+                        <Crown className="w-4 h-4 text-white" />
+                      </div>
+                      <h3 className="text-sm font-bold text-white tracking-wide">Become a PRO</h3>
                     </div>
-                    <h3 className="text-sm font-bold text-white tracking-wide">Become a PRO</h3>
-                  </div>
-                  <p className="relative z-10 text-xs text-blue-100 mt-1 font-medium pl-1">
-                    Upgrade for 10x visibility
-                  </p>
-                </button>
+                    <p className="relative z-10 text-xs text-blue-100 mt-1 font-medium pl-1">
+                      Upgrade for 10x visibility
+                    </p>
+                  </button>
                 </Link>
               </div>
             )}
@@ -308,17 +277,13 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                   >
                     <item.icon className={cn("h-5 w-5", isActive ? "text-[#14A9F9]" : "text-gray-400")} />
                     <span className="font-medium text-sm">{item.label}</span>
-                    {/* {item.badge && (
-                      <Badge variant="secondary" className="ml-auto bg-blue-100 text-blue-700">
-                        {item.badge}
-                      </Badge>
-                    )} */}
                   </Link>
                 );
               })}
             
 
-              <div className="mb-6">
+              <div className="mb-6 mt-6">
+                <Link href="/subscription">
                   <button
                     onClick={() => { setMobileOpen(false); }}
                     className="w-full p-4 rounded-xl bg-gradient-to-r from-[#14A9F9] to-blue-600 text-white flex items-center justify-between shadow-md"
@@ -332,6 +297,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                     </div>
                     <ChevronLeft className="w-4 h-4 rotate-180" />
                   </button>
+                </Link>
               </div>
             </div>
 
@@ -346,22 +312,15 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       )}
 
       {/* --- MOBILE BOTTOM NAVIGATION (CURVED) --- */}
-      {/* Structure:
-         [Item 0] [Item 1] [MIDDLE FAB] [Item 3] [Item 4 - Menu]
-         The middle item (index 2) is "Workstreams" in our logic, but visually we will make it pop.
-      */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white h-[70px] flex items-center justify-between px-2 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
-         {/* Item 1: Dashboard */}
          <Link href="/dashboard" className={cn("flex-1 flex flex-col items-center gap-1", pathname === "/dashboard" ? "text-[#14A9F9]" : "text-gray-400")}>
             <LayoutDashboard className="h-6 w-6" />
          </Link>
 
-         {/* Item 2: Projects */}
          <Link href="/projects" className={cn("flex-1 flex flex-col items-center gap-1", pathname === "/projects" ? "text-[#14A9F9]" : "text-gray-400")}>
             <FileText className="h-6 w-6" />
          </Link>
 
-         {/* Item 3: MIDDLE FAB (Workstreams) */}
          <div className="relative -top-8 flex-1 flex justify-center">
             <Link 
                href="/workstreams" 
@@ -369,15 +328,12 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
             >
                <Users className="h-6 w-6" />
             </Link>
-            {/* Curved cut-out simulation via SVG or just CSS tricks. Since we have a gray background page, border-gray-50 helps blend it. */}
          </div>
 
-         {/* Item 4: Calendar */}
          <Link href="/calendar" className={cn("flex-1 flex flex-col items-center gap-1", pathname === "/calendar" ? "text-[#14A9F9]" : "text-gray-400")}>
             <Calendar className="h-6 w-6" />
          </Link>
 
-         {/* Item 5: Menu Trigger */}
          <button onClick={() => setMobileOpen(true)} className={cn("flex-1 flex flex-col items-center gap-1 text-gray-400", mobileOpen && "text-[#14A9F9]")}>
             <Menu className="h-6 w-6" />
          </button>

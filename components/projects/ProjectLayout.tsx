@@ -270,14 +270,19 @@ const FilterSidebar = ({ filters, onFilterChange }: any) => {
   );
 };
 
-export default function ProjectLayout({ children }: { children: React.ReactNode }) {
+// --- MAIN LAYOUT ---
+interface ProjectLayoutProps {
+  children: React.ReactNode;
+  hideSidebars?: boolean; // New prop to control layout mode
+}
+
+export default function ProjectLayout({ children, hideSidebars = false }: ProjectLayoutProps) {
   const pathname = usePathname();
-  const [managerModalOpen, setManagerModalOpen] = useState(false);
   
   // Tabs Configuration
   const tabs = [
     { label: "New Projects", path: "/projects" },
-    { label: "Bookmarks", path: "/bookmark" },
+    { label: "Bookmarks", path: "/bookmark" }, // Changed path to match your folder structure
     { label: "Applied", path: "/applied" },
     { label: "Awarded", path: "/awarded" },
     { label: "Declined", path: "/declined" },
@@ -289,6 +294,8 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
       <div className="max-w-[1600px] mx-auto p-4 md:p-6 lg:p-8">
         
         {/* HEADER */}
+        {/* We can hide the header search if viewing a proposal to give maximum space, or keep it. 
+            Keeping it ensures consistent navigation context. */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Find Work</h1>
@@ -303,31 +310,35 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
         {/* LAYOUT GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* LEFT SIDEBAR */}
-          <div className="hidden lg:block lg:col-span-2.5 xl:col-span-2">
-             {/* Pass empty filters for UI demo, in real app manage state here or in context */}
-             <FilterSidebar filters={{ categories: [], jobTypes: [], experience: [] }} onFilterChange={() => {}} />
-          </div>
+          {/* LEFT SIDEBAR - HIDDEN IF hideSidebars IS TRUE */}
+          {!hideSidebars && (
+            <div className="hidden lg:block lg:col-span-2.5 xl:col-span-2">
+               <FilterSidebar filters={{ categories: [], jobTypes: [], experience: [] }} onFilterChange={() => {}} />
+            </div>
+          )}
 
-          {/* CENTER FEED */}
-          <div className="lg:col-span-6.5 xl:col-span-7 space-y-6">
-             {/* Navigation Tabs */}
-             <div className="bg-white rounded-xl border border-gray-200 p-1.5 flex overflow-x-auto no-scrollbar shadow-sm">
-                {tabs.map((tab) => {
-                  const isActive = pathname === tab.path;
-                  return (
-                    <Link
-                      key={tab.path}
-                      href={tab.path}
-                      className={`flex-shrink-0 px-4 py-2.5 text-sm font-medium rounded-lg transition-all flex items-center gap-2 ${
-                        isActive ? "bg-[#14A9F9] text-white shadow-sm" : "text-gray-600 hover:bg-gray-50"
-                      }`}
-                    >
-                      {tab.label}
-                    </Link>
-                  );
-                })}
-             </div>
+          {/* CENTER FEED - EXPANDS IF sidebars are hidden */}
+          <div className={`${hideSidebars ? 'lg:col-span-12' : 'lg:col-span-6.5 xl:col-span-7'} space-y-6 transition-all duration-300`}>
+             
+             {/* Hide Tabs when viewing proposal to reduce clutter */}
+             {!hideSidebars && (
+               <div className="bg-white rounded-xl border border-gray-200 p-1.5 flex overflow-x-auto no-scrollbar shadow-sm">
+                  {tabs.map((tab) => {
+                    const isActive = pathname === tab.path;
+                    return (
+                      <Link
+                        key={tab.path}
+                        href={tab.path}
+                        className={`flex-shrink-0 px-4 py-2.5 text-sm font-medium rounded-lg transition-all flex items-center gap-2 ${
+                          isActive ? "bg-[#14A9F9] text-white shadow-sm" : "text-gray-600 hover:bg-gray-50"
+                        }`}
+                      >
+                        {tab.label}
+                      </Link>
+                    );
+                  })}
+               </div>
+             )}
 
              {/* PAGE CONTENT INJECTED HERE */}
              <div className="min-h-[500px]">
@@ -335,17 +346,19 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
              </div>
           </div>
 
-          {/* RIGHT SIDEBAR */}
-          <div className="lg:col-span-3 space-y-6">
-             <RelationshipManagerCard />
-             {/* Promo Card */}
-             <div className="bg-gradient-to-br from-[#14A9F9] to-blue-600 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-                <h4 className="font-bold text-lg mb-2 relative z-10">Boost your profile</h4>
-                <p className="text-sm text-blue-100 mb-4 relative z-10">Freelancers with verified skills are 30% more likely to get hired.</p>
-                <button className="w-full bg-white text-[#14A9F9] py-2 rounded-md font-bold hover:bg-gray-50">Take Skill Test</button>
-             </div>
-          </div>
+          {/* RIGHT SIDEBAR - HIDDEN IF hideSidebars IS TRUE */}
+          {!hideSidebars && (
+            <div className="lg:col-span-3 space-y-6 hidden lg:block">
+               <RelationshipManagerCard />
+               {/* Promo Card */}
+               <div className="bg-gradient-to-br from-[#14A9F9] to-blue-600 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                  <h4 className="font-bold text-lg mb-2 relative z-10">Boost your profile</h4>
+                  <p className="text-sm text-blue-100 mb-4 relative z-10">Freelancers with verified skills are 30% more likely to get hired.</p>
+                  <button className="w-full bg-white text-[#14A9F9] py-2 rounded-md font-bold hover:bg-gray-50">Take Skill Test</button>
+               </div>
+            </div>
+          )}
 
         </div>
       </div>

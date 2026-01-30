@@ -4,6 +4,7 @@ import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Lock, CreditCard, CheckCircle, Loader2 } from "lucide-react";
+import { toast } from "sonner"; // Added toaster import
 
 // 1. Move the main logic into a separate component
 function CheckoutContent() {
@@ -23,7 +24,7 @@ function CheckoutContent() {
     setIsProcessing(true);
     // Simulate API call
     setTimeout(() => {
-      alert("Payment Successful! Welcome to Pro.");
+      toast.success("Payment Successful! Welcome to Pro."); 
       setIsProcessing(false);
       // In a real app, redirect to dashboard here
     }, 2000);

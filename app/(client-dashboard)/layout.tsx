@@ -13,13 +13,12 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import ClientGuard from "./clientGuard";
 import { useGetMeQuery } from "../redux/api/auth.api";
 import { useLogoutClientMutation } from "../redux/api/clientAuth.api";
 import { toast } from "sonner";
-
 
 const INITIAL_NOTIFICATIONS = [
   {
@@ -60,8 +59,8 @@ export default function ClientDashboardLayout({
   const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
 
   const { data, isLoading } = useGetMeQuery();
-
   const [logout] = useLogoutClientMutation();
+  const router = useRouter();
 
   const pathname = usePathname();
   const notificationRef = useRef<HTMLDivElement>(null);
@@ -103,8 +102,16 @@ export default function ClientDashboardLayout({
   const handleLogout = async () => {
     try {
       await logout().unwrap();
+      
+      // Clear localStorage
+      localStorage.removeItem('isLoggedIn');
+      localStorage.removeItem('userType');
+      
       setIsProfileOpen(false);
       toast.success("Logged out successfully");
+      
+      // Redirect to home page
+      router.push('/');
     } catch (error) {
       toast.error("Logout failed");
       console.error("Logout failed:", error);
@@ -283,14 +290,13 @@ export default function ClientDashboardLayout({
                         My Profile
                       </Link>
                       <div className="h-px bg-slate-100 my-1" />
-                      <Link
-                        href={"/login"}
+                      <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium"
+                        className="flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium w-full"
                       >
                         <LogOut size={16} />
                         Logout
-                      </Link>
+                      </button>
                     </div>
                   </div>
                 )}

@@ -1,22 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, UploadCloud, ChevronDown, DollarSign, Clock, Users, Eye } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Sparkles, UploadCloud, ChevronDown, DollarSign, Clock, Users, Eye, Loader2, Plus, X } from "lucide-react";
+import { toast } from "sonner"; // Added toaster import
 
-// --- DUMMY DATA ---
-const SKILLS = [
-  "React JS",
-  "Node.js",
-  "Flutter",
-  "Python",
-  "UI/UX",
-  "Blockchain",
-  "Zoho CRM",
+// Import Redux Hooks
+import { useCreateJobMutation, useGenerateJobDescriptionMutation } from "./../../redux/api/jobs.api";
+
+// --- CONSTANTS ---
+const SUGGESTED_SKILLS = [
+  "React JS", "Node.js", "Flutter", "Python", "UI/UX", "Blockchain", "Zoho CRM", "Java", "AWS", "Figma"
 ];
 
 // --- REUSABLE COMPONENTS ---
 
-// 1. Fixed Card Component Types
 function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
     <div className={`bg-white rounded-xl shadow-lg border border-gray-100 ${className}`}>
@@ -25,7 +23,6 @@ function Card({ children, className = "" }: { children: React.ReactNode; classNa
   );
 }
 
-// 2. Fixed SectionHeader Types
 function SectionHeader({ title, icon: Icon }: { title: string; icon: any }) {
   return (
     <h2 className="flex items-center text-2xl font-bold text-slate-800 mb-6 border-b pb-3">
@@ -35,17 +32,17 @@ function SectionHeader({ title, icon: Icon }: { title: string; icon: any }) {
   );
 }
 
-// 3. Fixed FormInput Types
 interface FormInputProps {
   label: string;
   value: string | number;
-  onChange: (e: any) => void; // Using any to handle both input and textarea events easily
+  onChange: (e: any) => void;
   placeholder?: string;
   type?: string;
   rows?: number;
+  onKeyDown?: (e: any) => void; // Added for custom skill input
 }
 
-function FormInput({ label, value, onChange, placeholder, type = "text", rows }: FormInputProps) {
+function FormInput({ label, value, onChange, placeholder, type = "text", rows, onKeyDown }: FormInputProps) {
   return (
     <div className="space-y-1.5">
       <label className="block text-sm font-semibold text-slate-700">{label}</label>
@@ -61,6 +58,7 @@ function FormInput({ label, value, onChange, placeholder, type = "text", rows }:
         <input
           value={value}
           onChange={onChange}
+          onKeyDown={onKeyDown}
           type={type}
           className="w-full p-3 border border-gray-300 rounded-lg focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition outline-none"
           placeholder={placeholder}
@@ -70,7 +68,6 @@ function FormInput({ label, value, onChange, placeholder, type = "text", rows }:
   );
 }
 
-// 4. Fixed FormSelect Types
 interface FormSelectProps {
   label: string;
   value: string | number;
@@ -100,15 +97,25 @@ function FormSelect({ label, value, onChange, options }: FormSelectProps) {
 
 // --- MAIN COMPONENT ---
 export default function PostJob() {
+  const router = useRouter();
+  
+  // API Hooks
+  const [createJob, { isLoading: isCreating }] = useCreateJobMutation();
+  const [generateDesc, { isLoading: isGenerating }] = useGenerateJobDescriptionMutation();
+
+  // Form State
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [projectType, setProjectType] = useState("One-time Project");
+  const [projectType, setProjectType] = useState("One-time Project"); 
   const [skills, setSkills] = useState<string[]>([]);
+  const [customSkill, setCustomSkill] = useState(""); // State for manual skill input
   const [budgetType, setBudgetType] = useState<"fixed" | "hourly">("fixed");
-  const [budget, setBudget] = useState("");
-  const [timeline, setTimeline] = useState("2–4 Weeks");
+  const [budget, setBudget] = useState(""); 
+  const [timeline, setTimeline] = useState("2–4 Weeks"); 
   const [visibility, setVisibility] = useState("Public");
+  const [file, setFile] = useState<File | null>(null);
 
+  // Toggle suggested skills
   const toggleSkill = (skill: string) => {
     setSkills((prev) =>
       prev.includes(skill)
@@ -117,24 +124,74 @@ export default function PostJob() {
     );
   };
 
-  const generateWithAI = () => {
-    setDescription(
-      "We are looking for an experienced developer to build a high-quality application with clean UI, scalable backend, and great user experience."
-    );
+  // Add custom skill
+  const addCustomSkill = () => {
+    if (customSkill.trim() && !skills.includes(customSkill.trim())) {
+        setSkills([...skills, customSkill.trim()]);
+        setCustomSkill("");
+    }
   };
 
-  const publishJob = () => {
-    alert("✅ Job Published Successfully!");
-    console.log({
-      title,
-      description,
-      projectType,
-      skills,
-      budgetType,
-      budget,
-      timeline,
-      visibility,
-    });
+  // Handle Enter key for custom skill
+  const handleCustomSkillKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+        e.preventDefault(); // Prevent form submission
+        addCustomSkill();
+    }
+  };
+
+  // --- AI GENERATION ---
+  const generateWithAI = async () => {
+    if (!title) {
+        toast.error("Please enter a title first to generate a description."); // Replaced alert
+        return;
+    }
+    try {
+        const res = await generateDesc({ title, skills }).unwrap();
+        setDescription(res.description || res.data?.description || "Generated description...");
+    } catch (error) {
+        setDescription("We are looking for an experienced developer to build a high-quality application with clean UI, scalable backend, and great user experience.");
+    }
+  };
+
+  // --- SUBMIT JOB ---
+  const publishJob = async () => {
+    if (!title || !description || !budget) {
+        toast.error("Please fill in all required fields (Title, Description, Budget)."); // Replaced alert
+        return;
+    }
+
+    try {
+        const formData = new FormData();
+
+        formData.append("title", title);
+        formData.append("description", description);
+        formData.append("technologies", JSON.stringify(skills)); 
+        formData.append("currency", "INR"); 
+        formData.append("projectValue", budget.toString());
+        formData.append("hireTimeline", timeline);
+        
+        // FIX: Ensure lowercase values for enum (fixed/hourly)
+        formData.append("priceType", budgetType === 'fixed' ? 'fixed' : 'hourly');
+        
+        formData.append("jobType", projectType); 
+        formData.append("visibility", visibility);
+
+        if (file) {
+            formData.append("document", file); 
+        }
+
+        await createJob(formData).unwrap();
+
+        toast.success("Job Published Successfully!"); // Replaced alert
+        router.push("/client-dashboard"); 
+
+    } catch (error: any) {
+        console.error("Job Post Failed", error);
+        // Safely extract error message
+        const msg = error?.data?.error || error?.data?.message || "Failed to publish job.";
+        toast.error(msg); // Replaced alert
+    }
   };
 
   return (
@@ -164,13 +221,15 @@ export default function PostJob() {
                 rows={5}
               />
 
-              {/* AI Generator Button - Enhanced Look */}
+              {/* AI Generator Button */}
               <div className="p-3 border border-dashed border-cyan-300 rounded-lg bg-cyan-50 text-center">
                 <button
                   onClick={generateWithAI}
-                  className="inline-flex items-center gap-2 text-sm font-semibold bg-cyan-600 text-white px-5 py-2.5 rounded-full shadow-md hover:bg-cyan-700 transition duration-150"
+                  disabled={isGenerating}
+                  className="inline-flex items-center gap-2 text-sm font-semibold bg-cyan-600 text-white px-5 py-2.5 rounded-full shadow-md hover:bg-cyan-700 transition duration-150 disabled:opacity-70"
                 >
-                  <Sparkles size={16} /> Generate Description with AI
+                  {isGenerating ? <Loader2 className="animate-spin" size={16} /> : <Sparkles size={16} />} 
+                  {isGenerating ? "Generating..." : "Generate Description with AI"}
                 </button>
               </div>
 
@@ -184,10 +243,16 @@ export default function PostJob() {
 
                 <div className="space-y-1.5">
                     <label className="block text-sm font-semibold text-slate-700">Attachments</label>
-                    <div className="flex items-center justify-center p-3 border-2 border-dashed border-gray-300 rounded-lg h-full hover:border-cyan-500 transition cursor-pointer">
+                    <div className="flex items-center justify-center p-3 border-2 border-dashed border-gray-300 rounded-lg h-full hover:border-cyan-500 transition cursor-pointer relative bg-slate-50">
                         <UploadCloud size={20} className="text-gray-500 mr-2" />
-                        <span className="text-sm text-gray-600">Click to upload files (max 10MB)</span>
-                        <input type="file" multiple className="sr-only" />
+                        <span className="text-sm text-gray-600 truncate max-w-[150px]">
+                            {file ? file.name : "Click to upload"}
+                        </span>
+                        <input 
+                            type="file" 
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)} 
+                        />
                     </div>
                 </div>
               </div>
@@ -199,24 +264,59 @@ export default function PostJob() {
             <SectionHeader title="Skills & Expertise" icon={Users} />
 
             <p className="text-sm text-slate-600 mb-4">
-                Select the core skills required for your project.
+                Select from suggestions or add your own required skills.
             </p>
 
-            <div className="flex flex-wrap gap-3">
-              {SKILLS.map((skill) => (
-                <button
-                  key={skill}
-                  onClick={() => toggleSkill(skill)}
-                  // Pill-style, highly distinct selected state
-                  className={`px-4 py-2 rounded-full border text-sm font-medium transition duration-200 ${
-                    skills.includes(skill)
-                      ? "bg-cyan-600 text-white border-cyan-600 shadow-md transform scale-105"
-                      : "bg-white text-slate-700 border-gray-300 hover:bg-slate-50"
-                  }`}
+            {/* Custom Skill Input */}
+            <div className="flex gap-2 mb-6">
+                <div className="flex-1">
+                    <FormInput
+                        label=""
+                        value={customSkill}
+                        onChange={(e) => setCustomSkill(e.target.value)}
+                        placeholder="Type a skill (e.g. Next.js) and press Enter"
+                        onKeyDown={handleCustomSkillKeyDown}
+                    />
+                </div>
+                <button 
+                    onClick={addCustomSkill}
+                    className="mt-1.5 bg-slate-800 text-white px-4 rounded-lg hover:bg-slate-900 transition flex items-center justify-center h-[46px]"
                 >
-                  {skill}
+                    <Plus size={20} />
                 </button>
-              ))}
+            </div>
+
+            {/* Selected Skills Display */}
+            {skills.length > 0 && (
+                <div className="mb-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                    <h4 className="text-xs font-bold text-slate-500 uppercase mb-3">Selected Skills</h4>
+                    <div className="flex flex-wrap gap-2">
+                        {skills.map(skill => (
+                            <span key={skill} className="bg-cyan-100 text-cyan-800 text-sm font-semibold px-3 py-1 rounded-full flex items-center gap-1">
+                                {skill}
+                                <button onClick={() => toggleSkill(skill)} className="hover:text-red-500"><X size={14}/></button>
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            <div className="border-t pt-4">
+                <h4 className="text-xs font-bold text-slate-400 uppercase mb-3">Suggested Skills</h4>
+                <div className="flex flex-wrap gap-3">
+                {SUGGESTED_SKILLS.map((skill) => {
+                    if (skills.includes(skill)) return null; // Don't show if already selected
+                    return (
+                        <button
+                        key={skill}
+                        onClick={() => toggleSkill(skill)}
+                        className="px-4 py-2 rounded-full border text-sm font-medium transition duration-200 bg-white text-slate-700 border-gray-300 hover:bg-slate-50 hover:border-cyan-400"
+                        >
+                        + {skill}
+                        </button>
+                    )
+                })}
+                </div>
             </div>
           </Card>
 
@@ -224,7 +324,7 @@ export default function PostJob() {
           <Card className="p-8">
             <SectionHeader title="Budget & Timeline" icon={DollarSign} />
 
-            {/* Budget Type Toggle - Tab Style */}
+            {/* Budget Type Toggle */}
             <div className="flex rounded-lg bg-gray-100 p-1 mb-6 shadow-inner">
               {["fixed", "hourly"].map((type) => (
                 <button
@@ -249,8 +349,8 @@ export default function PostJob() {
                     type="number"
                     placeholder={
                         budgetType === "fixed"
-                        ? "e.g., 50000 (Fixed)"
-                        : "e.g., 500/hr (Hourly)"
+                        ? "e.g., 50000"
+                        : "e.g., 500"
                     }
                 />
 
@@ -258,7 +358,7 @@ export default function PostJob() {
                     label="Expected Delivery Time"
                     value={timeline}
                     onChange={(e) => setTimeline(e.target.value)}
-                    options={["1 Week", "2–4 Weeks", "1–3 Months", "3+ Months"]}
+                    options={["Within One week", "2–4 Weeks", "1–3 Months", "3+ Months"]}
                 />
             </div>
           </Card>
@@ -305,55 +405,30 @@ export default function PostJob() {
                 {budget ? `₹${budget}` : "—"} ({budgetType})
               </p>
               <p>
-                <strong className="text-slate-700">Skills:</strong> {skills.join(", ") || "—"}
+                <strong className="text-slate-700">Skills:</strong> {skills.length > 0 ? skills.join(", ") : "—"}
               </p>
               <p>
                 <strong className="text-slate-700">Timeline:</strong> {timeline}
               </p>
             </div>
 
-            {/* Publish Button - Highly Prominent CTA */}
+            {/* Publish Button */}
             <button
               onClick={publishJob}
-              className="mt-6 w-full bg-gradient-to-r from-indigo-600 to-cyan-600 text-white py-3 rounded-xl font-extrabold text-lg shadow-xl hover:shadow-cyan-400/50 transition duration-300 transform hover:scale-[1.01]"
+              disabled={isCreating}
+              className="mt-6 w-full bg-gradient-to-r from-indigo-600 to-cyan-600 text-white py-3 rounded-xl font-extrabold text-lg shadow-xl hover:shadow-cyan-400/50 transition duration-300 transform hover:scale-[1.01] flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              🚀 Publish Job
+              {isCreating ? <Loader2 className="animate-spin"/> : "🚀 Publish Job"}
             </button>
           </Card>
           
-          {/* Relationship Manager & Suggested Freelancers combined for simplicity */}
+          {/* Support */}
           <Card className="p-6">
             <h3 className="font-bold text-lg text-slate-800 mb-4 border-b pb-3">
-              Support & Suggestions
+              Support
             </h3>
-                      
-            {/* Suggested Freelancers */}
-            <div>
-              <h4 className="font-semibold text-slate-700 mb-2 flex items-center gap-2">
-                🌟 Suggested Freelancers
-              </h4>
-              <div className="space-y-3">
-                {[
-                  ["Priya Sharma", "Flutter Dev"],
-                  ["Arjun Patel", "Full Stack"],
-                  ["Sneha Verma", "UI/UX"],
-                ].map((f, index) => (
-                  <div key={index} className="flex gap-3 text-sm items-center">
-                    <img
-                      src={`https://i.pravatar.cc/44?img=${index + 1}`}
-                      className="w-10 h-10 rounded-full border border-gray-200"
-                      alt="Freelancer"
-                    />
-                    <div>
-                      <strong className="text-slate-800">{f[0]}</strong>
-                      <div className="text-slate-500">{f[1]}</div>
-                    </div>
-                    <button className="ml-auto text-xs text-cyan-600 font-semibold hover:underline">
-                        Invite
-                    </button>
-                  </div>
-                ))}
-              </div>
+            <div className="text-sm text-slate-500">
+                Need help crafting the perfect job post? <a href="#" className="text-cyan-600 hover:underline">Contact Support</a>
             </div>
           </Card>
         </aside>

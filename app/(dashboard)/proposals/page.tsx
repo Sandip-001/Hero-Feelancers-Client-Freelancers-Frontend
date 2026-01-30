@@ -3,17 +3,26 @@
 import React, { useState, useMemo } from "react";
 import { 
   ArrowLeft, Briefcase, FileText, 
-  Clock, CheckCircle, ShieldCheck, XCircle, Search, 
-  Filter, ChevronRight, Mail, Star, 
-  Download, Globe, ChevronDown, 
-  ChevronUp, Wallet, List, LayoutGrid,
-  MessageSquare, Phone, Zap, Bookmark,
+  Clock, CheckCircle, Search, 
+  Filter, Star, 
+  Globe, ChevronDown, 
+  ChevronUp, MessageSquare, Phone, Zap,
   DollarSign, Calendar, MapPin, Layers,
-  BadgeCheck
+  BadgeCheck, Loader2, AlertCircle,
+  XCircle
 } from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner"; // Added toaster import
+
+// --- REDUX IMPORTS ---
+import { useGetMeQuery } from "@/app/redux/api/auth.api"; // 1. ADDED IMPORT
+import { 
+  useGetMyProposalsQuery, 
+  useWithdrawProposalMutation 
+} from "./../../redux/api/proposals.api";
 
 // ==============================================================================
-// 1. SHARED UI COMPONENTS (Exact match from Projects Page)
+// 1. SHARED UI COMPONENTS
 // ==============================================================================
 
 const Button = ({ variant = "default", size = "default", className = "", children, ...props }: any) => {
@@ -22,16 +31,13 @@ const Button = ({ variant = "default", size = "default", className = "", childre
     default: "bg-[#14A9F9] text-white hover:bg-[#0f8ecf] shadow-sm",
     outline: "border border-gray-300 bg-white hover:bg-gray-50 text-gray-700",
     blue: "bg-[#14A9F9] text-white hover:bg-[#0f8ecf] shadow-sm", 
-    blueOutline: "border border-[#14A9F9] text-[#14A9F9] bg-white hover:bg-blue-50",
     destructive: "bg-red-500 text-white hover:bg-red-600",
     ghost: "hover:bg-gray-100 hover:text-gray-900",
-    green: "bg-green-600 text-white hover:bg-green-700 shadow-sm",
   };
   const sizes: any = {
     default: "h-10 px-4 py-2",
     sm: "h-8 px-3 text-xs",
     lg: "h-12 px-8 text-base",
-    icon: "h-10 w-10",
   };
   return <button className={`${baseStyles} ${variants[variant] || variants.default} ${sizes[size] || sizes.default} ${className}`} {...props}>{children}</button>;
 };
@@ -39,33 +45,33 @@ const Button = ({ variant = "default", size = "default", className = "", childre
 const Badge = ({ variant = "default", className = "", children }: any) => {
   const baseStyles = "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors";
   const variants: any = {
-    default: "bg-gray-100 text-gray-700 border-gray-200 border",
     Pending: "bg-gray-100 text-gray-600 border-gray-200",
     Viewed: "bg-blue-50 text-blue-700 border-blue-200",
     Interviewing: "bg-purple-50 text-purple-700 border-purple-200",
     Awarded: "bg-green-100 text-green-700 border-green-200",
     Declined: "bg-red-50 text-red-700 border-red-200",
     Withdrawn: "bg-gray-50 text-gray-400 border-gray-200 dashed",
-    info: "bg-[#14A9F9] text-white border-transparent", 
   };
-  const key = variants[variant] ? variant : "default";
+  // Fallback to Pending if status doesn't match
+  const key = variants[variant] ? variant : "Pending";
   return <div className={`${baseStyles} ${variants[key]} ${className}`}>{children}</div>;
 };
 
 const Card = ({ className = "", children }: any) => <div className={`rounded-xl border border-gray-200 bg-white text-gray-950 shadow-sm transition-all ${className}`}>{children}</div>;
 
 // ==============================================================================
-// 2. MOCK DATA
+// 2. TYPES
 // ==============================================================================
 
 type ProposalStatus = "Pending" | "Viewed" | "Interviewing" | "Awarded" | "Declined" | "Withdrawn";
 
 interface Proposal {
-  id: number;
-  title: string;
+  id: string | number;
+  jobId: string | number;
+  title: string; // Job Title
   category: string;
-  description: string;
-  budget: string;
+  description: string; // Job Description
+  budget: string; // Client Budget
   budgetVal: number;
   submittedOn: string;
   status: ProposalStatus;
@@ -74,7 +80,6 @@ interface Proposal {
   myBid: number;
   myDuration: string;
   coverLetter: string;
-  attachments: string[];
   skills: string[];
   
   // Client Details
@@ -89,80 +94,8 @@ interface Proposal {
   totalProposals: string;
 }
 
-const ALL_PROPOSALS: Proposal[] = [
-  {
-    id: 1,
-    title: "Cab App Development (Uber Clone)",
-    category: "Mobile App",
-    description: "I will design UI UX for mobile app with figma for ios Adarsh Group is venturing into homes Inspired by the millennial generation...",
-    budget: "$4,500",
-    budgetVal: 4500,
-    submittedOn: "Oct 12, 2023",
-    status: "Viewed",
-    myBid: 4100,
-    myDuration: "7 Days",
-    coverLetter: "Hi there, I have extensive experience with Flutter and UI/UX design. I have reviewed your requirements for the Cab App and I am confident I can deliver a high-quality interface similar to Uber/Lyft but with the luxury aesthetic you described.",
-    attachments: ["portfolio_v2.pdf", "wireframes.png"],
-    skills: ["Flutter", "UI/UX", "iOS", "Figma"],
-    clientName: "Adarsh Group",
-    clientLocation: "New York, USA",
-    clientVerified: true,
-    clientRating: 4.8,
-    clientSpent: "$50k+",
-    clientMemberSince: "2018",
-    lastClientActivity: "2 hours ago",
-    totalProposals: "20-50"
-  },
-  {
-    id: 2,
-    title: "Real Estate Portal App",
-    category: "Web Development",
-    description: "Full stack development for a property listing app. Geolocation, Maps integration...",
-    budget: "$8,000",
-    budgetVal: 8000,
-    submittedOn: "Aug 15, 2023",
-    status: "Awarded",
-    myBid: 8000,
-    myDuration: "2 Months",
-    coverLetter: "I specialize in map-based applications using Flutter...",
-    attachments: ["case_study_realestate.pdf"],
-    skills: ["React", "Node.js", "MongoDB", "Google Maps API"],
-    clientName: "EstateFindr Inc.",
-    clientLocation: "London, UK",
-    clientVerified: true,
-    clientRating: 5.0,
-    clientSpent: "$120k+",
-    clientMemberSince: "2020",
-    lastClientActivity: "1 day ago",
-    totalProposals: "5-10"
-  },
-  {
-    id: 3,
-    title: "Crypto Wallet Integration",
-    category: "Blockchain",
-    description: "Need a developer to integrate MetaMask wallet connect into our existing React application.",
-    budget: "$3,000",
-    budgetVal: 3000,
-    submittedOn: "Sept 10, 2023",
-    status: "Declined",
-    myBid: 2800,
-    myDuration: "14 Days",
-    coverLetter: "I am a Web3 developer with 3 years of experience...",
-    attachments: [],
-    skills: ["Web3.js", "React", "MetaMask"],
-    clientName: "CryptoSecure",
-    clientLocation: "Berlin, Germany",
-    clientVerified: false,
-    clientRating: 0,
-    clientSpent: "$0",
-    clientMemberSince: "2023",
-    lastClientActivity: "5 days ago",
-    totalProposals: "50+"
-  },
-];
-
 // ==============================================================================
-// 3. SIDEBAR COMPONENTS (Matches Projects Page)
+// 3. SIDEBAR COMPONENTS
 // ==============================================================================
 
 const RelationshipManagerCard = () => {
@@ -187,23 +120,17 @@ const RelationshipManagerCard = () => {
         </div>
         
         <div className="space-y-2">
-          <Button size="sm" variant="blue" className="w-full flex items-center gap-2 h-9">
-            <MessageSquare className="h-3.5 w-3.5" /> Message Manager
-          </Button>
-          <Button size="sm" variant="outline" className="w-full flex items-center gap-2 h-9 text-gray-600 hover:text-[#14A9F9] hover:border-[#14A9F9]">
-            <Phone className="h-3.5 w-3.5" /> Schedule Call
-          </Button>
-        </div>
-        
-        <div className="mt-4 pt-3 border-t border-gray-100 text-[10px] text-gray-400 text-center">
-          Available: Mon-Fri, 9AM - 6PM EST
+          <Link href="/messages" className="w-full">
+            <Button size="sm" variant="blue" className="w-full flex items-center gap-2 h-9">
+                <MessageSquare className="h-3.5 w-3.5" /> Message Manager
+            </Button>
+          </Link>
         </div>
       </div>
     </Card>
   );
 };
 
-// Adapted FilterSidebar to match the visual style of Project Page (Simple List)
 const ProposalFilterSidebar = ({ filters, setFilters }: any) => {
   const toggleStatus = (status: string) => {
     setFilters((prev: any) => {
@@ -238,7 +165,7 @@ const ProposalFilterSidebar = ({ filters, setFilters }: any) => {
           </div>
         </div>
 
-        {/* Budget (Simplified for UI consistency) */}
+        {/* Budget */}
         <div className="mb-6">
           <h4 className="text-sm font-bold text-gray-800 mb-3">My Bid Range</h4>
           <div className="flex items-center gap-2">
@@ -264,7 +191,7 @@ const ProposalFilterSidebar = ({ filters, setFilters }: any) => {
 };
 
 // ==============================================================================
-// 4. FEED COMPONENTS (Styled like Projects Page)
+// 4. FEED COMPONENTS
 // ==============================================================================
 
 const ProposalListCard = ({ proposal, onViewDetails }: { proposal: Proposal, onViewDetails: (p: Proposal) => void }) => {
@@ -318,31 +245,25 @@ const ProposalListCard = ({ proposal, onViewDetails }: { proposal: Proposal, onV
 };
 
 // ==============================================================================
-// 5. DETAIL VIEW (Mirrors Project Page "View Proposal" section)
+// 5. DETAIL VIEW
 // ==============================================================================
 
-const ProposalTimeline = ({ status }: { status: string }) => {
-    const stages = ["Pending", "Viewed", "Interviewing", "Awarded"];
-    const currentIdx = stages.indexOf(status) === -1 ? 0 : stages.indexOf(status);
- 
-    return (
-       <div className="w-full mb-8 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase">Application Status</h3>
-          <div className="flex justify-between mb-2">
-             {stages.map((stage, i) => (
-                <div key={stage} className={`text-xs font-medium ${i <= currentIdx ? 'text-[#14A9F9]' : 'text-gray-400'}`}>{stage}</div>
-             ))}
-          </div>
-          <div className="h-2 bg-gray-100 rounded-full w-full flex">
-             {stages.map((stage, i) => (
-                <div key={stage} className={`h-full flex-1 first:rounded-l-full last:rounded-r-full border-r border-white last:border-0 transition-all ${i <= currentIdx ? 'bg-[#14A9F9]' : 'bg-transparent'}`}></div>
-             ))}
-          </div>
-       </div>
-    );
- };
-
 const ProposalDetailView = ({ proposal, onBack }: { proposal: Proposal, onBack: () => void }) => {
+  // Redux Hook for Withdrawal
+  const [withdrawProposal, { isLoading: isWithdrawing }] = useWithdrawProposalMutation();
+
+  const handleWithdraw = async () => {
+      if(!confirm("Are you sure you want to withdraw this proposal?")) return;
+      try {
+          await withdrawProposal(proposal.id).unwrap();
+          toast.success("Proposal withdrawn."); // Replaced alert
+          onBack();
+      } catch (error) {
+          console.error(error);
+          toast.error("Failed to withdraw proposal"); // Replaced alert
+      }
+  };
+
   return (
     <div className="animate-in slide-in-from-right-4 duration-300">
       <div className="flex items-center gap-4 mb-6">
@@ -367,9 +288,6 @@ const ProposalDetailView = ({ proposal, onBack }: { proposal: Proposal, onBack: 
               <div className="flex items-center gap-2"><MapPin className="h-4 w-4 text-[#14A9F9]" /><span>{proposal.clientLocation}</span></div>
             </div>
             
-            {/* Timeline within the main card flow */}
-            {/* <ProposalTimeline status={proposal.status} /> */}
-
             <div className="mb-8">
                 <h3 className="font-bold text-lg text-gray-900 mb-3">Job Description</h3>
                 <p className="text-gray-700 leading-7">{proposal.description}</p>
@@ -393,8 +311,8 @@ const ProposalDetailView = ({ proposal, onBack }: { proposal: Proposal, onBack: 
             <div className="mb-8">
                 <h3 className="font-bold text-lg text-gray-900 mb-3">Skills & Expertise</h3>
                 <div className="flex flex-wrap gap-2">
-                    {proposal.skills?.map(skill => (
-                        <span key={skill} className="px-4 py-2 bg-gray-100 text-gray-700 text-sm rounded-full">{skill}</span>
+                    {proposal.skills?.map((skill, i) => (
+                        <span key={i} className="px-4 py-2 bg-gray-100 text-gray-700 text-sm rounded-full">{skill}</span>
                     ))}
                 </div>
             </div>
@@ -421,19 +339,6 @@ const ProposalDetailView = ({ proposal, onBack }: { proposal: Proposal, onBack: 
                       {proposal.coverLetter}
                    </div>
                 </div>
-
-                {/* {proposal.attachments.length > 0 && (
-                    <div>
-                        <label className="block text-sm font-medium text-gray-500 mb-2 uppercase tracking-wide">Attachments</label>
-                        <div className="flex gap-3">
-                            {proposal.attachments.map(file => (
-                                <div key={file} className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-md text-sm text-[#14A9F9]">
-                                    <Download className="h-4 w-4" /> {file}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )} */}
              </div>
           </div>
         </div>
@@ -443,25 +348,32 @@ const ProposalDetailView = ({ proposal, onBack }: { proposal: Proposal, onBack: 
            
            {/* Action Card */}
            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-              <Button onClick={onBack} variant="outline" className="w-full h-12 text-base mb-3 font-semibold">
-                Back to List
-              </Button>
-              {proposal.status === "Pending" && (
-                  <Button variant="destructive" className="w-full h-12 text-base flex items-center justify-center gap-2">
-                      Withdraw Proposal
-                  </Button>
-              )}
-              {proposal.status === "Interviewing" && (
-                  <Button variant="blue" className="w-full h-12 text-base flex items-center justify-center gap-2">
-                      <MessageSquare className="h-4 w-4"/> Reply to Message
-                  </Button>
-              )}
+             <Button onClick={onBack} variant="outline" className="w-full h-12 text-base mb-3 font-semibold">
+               Back to List
+             </Button>
+             {proposal.status === "Pending" && (
+                 <Button 
+                   onClick={handleWithdraw} 
+                   disabled={isWithdrawing}
+                   variant="destructive" 
+                   className="w-full h-12 text-base flex items-center justify-center gap-2"
+                 >
+                   {isWithdrawing ? <Loader2 className="animate-spin" /> : "Withdraw Proposal"}
+                 </Button>
+             )}
+             {proposal.status === "Interviewing" && (
+                 <Link href="/messages" className="w-full block">
+                   <Button variant="blue" className="w-full h-12 text-base flex items-center justify-center gap-2">
+                       <MessageSquare className="h-4 w-4"/> Reply to Message
+                   </Button>
+                 </Link>
+             )}
            </div>
 
-           {/* Client Info Card (Matches Project Page) */}
+           {/* Client Info Card */}
            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-              <h4 className="font-bold text-gray-900 mb-4">About the Client</h4>
-              <div className="space-y-4">
+             <h4 className="font-bold text-gray-900 mb-4">About the Client</h4>
+             <div className="space-y-4">
                  <div className="flex items-center gap-2">
                     {proposal.clientVerified ? <BadgeCheck className="h-5 w-5 text-blue-600" /> : <XCircle className="h-5 w-5 text-gray-400" />}
                     <span className="font-medium text-gray-700">{proposal.clientVerified ? "Payment Method Verified" : "Payment Unverified"}</span>
@@ -482,15 +394,7 @@ const ProposalDetailView = ({ proposal, onBack }: { proposal: Proposal, onBack: 
                     <h5 className="font-bold text-gray-900">{proposal.clientSpent} Total Spent</h5>
                     <span className="text-sm text-gray-500">Member since {proposal.clientMemberSince}</span>
                  </div>
-              </div>
-           </div>
-
-           <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-               <h3 className="font-bold text-lg text-gray-900 mb-3">Activity on this Job</h3>
-               <div className="text-sm text-gray-600 space-y-2">
-                   <p>Proposals: <span className="font-semibold text-gray-900">{proposal.totalProposals}</span></p>
-                   <p>Last Active: <span className="font-semibold text-gray-900">{proposal.lastClientActivity}</span></p>
-               </div>
+             </div>
            </div>
 
         </div>
@@ -514,12 +418,29 @@ export default function ProposalsPage() {
     maxBudget: "",
   });
 
-  // Derived State (LOGIC)
+  // --- 1. GET CURRENT USER ID (ADDED) ---
+  const { data: authData } = useGetMeQuery();
+  const freelancerId = authData?.user?._id || authData?.user?.id;
+
+  // --- 2. FETCH DATA WITH ID (UPDATED) ---
+  const { data: apiProposals, isLoading, error } = useGetMyProposalsQuery(
+    { freelancerId }, 
+    { skip: !freelancerId }
+  );
+
+  // --- 3. DERIVED STATE (Filters) ---
   const filteredProposals = useMemo(() => {
-    return ALL_PROPOSALS.filter((p) => {
+    // If API is loading or has error, return empty
+    if (!apiProposals) return [];
+    
+    // Handle { data: [...] } structure if API returns it that way
+    const proposalsList = Array.isArray(apiProposals) ? apiProposals : (apiProposals.data || []);
+
+    return proposalsList.filter((p: any) => {
       // 1. Search Query
       const searchLower = searchQuery.toLowerCase();
-      const matchesSearch = p.title.toLowerCase().includes(searchLower) || p.clientName.toLowerCase().includes(searchLower);
+      // Safe checks with optional chaining
+      const matchesSearch = (p.title?.toLowerCase() || "").includes(searchLower) || (p.clientName?.toLowerCase() || "").includes(searchLower);
 
       // 2. Status Filter
       const matchesStatus = filters.status.length === 0 || filters.status.includes(p.status);
@@ -532,11 +453,13 @@ export default function ProposalsPage() {
       // 4. Budget Filter
       const min = filters.minBudget === "" ? 0 : Number(filters.minBudget);
       const max = filters.maxBudget === "" ? Infinity : Number(filters.maxBudget);
-      const matchesBudget = p.budgetVal >= min && p.budgetVal <= max;
+      // Ensure budgetVal exists on API data or parse it
+      const budgetVal = p.budgetVal || Number(p.myBid) || 0;
+      const matchesBudget = budgetVal >= min && budgetVal <= max;
 
       return matchesSearch && matchesStatus && matchesTab && matchesBudget;
     });
-  }, [searchQuery, filters, activeTab]);
+  }, [apiProposals, searchQuery, filters, activeTab]);
 
   // Handle View Details Scroll
   const handleViewDetails = (p: Proposal) => {
@@ -582,7 +505,7 @@ export default function ProposalsPage() {
         {/* 3-COLUMN LAYOUT */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* LEFT COLUMN: FILTERS (Fixed Width/Col Span) */}
+          {/* LEFT COLUMN: FILTERS */}
           <div className="hidden lg:block lg:col-span-3 xl:col-span-2">
              <ProposalFilterSidebar filters={filters} setFilters={setFilters} />
           </div>
@@ -590,8 +513,8 @@ export default function ProposalsPage() {
           {/* MIDDLE COLUMN: FEED */}
           <div className="lg:col-span-9 xl:col-span-7 space-y-6">
               
-             {/* Tabs Header */}
-             <div className="bg-white rounded-xl border border-gray-200 p-1.5 flex overflow-x-auto no-scrollbar shadow-sm">
+              {/* Tabs Header */}
+              <div className="bg-white rounded-xl border border-gray-200 p-1.5 flex overflow-x-auto no-scrollbar shadow-sm">
                 {["All", "Active", "Archived"].map((tab) => (
                   <button
                     key={tab}
@@ -605,29 +528,42 @@ export default function ProposalsPage() {
                     {tab}
                   </button>
                 ))}
-             </div>
+              </div>
 
-             {/* Results Count & Clear */}
-             <div className="flex justify-between items-center px-1">
+              {/* Results Count & Clear */}
+              <div className="flex justify-between items-center px-1">
                 <p className="text-xs text-gray-500 font-medium">{filteredProposals.length} proposals found</p>
                 {(filters.status.length > 0 || filters.minBudget !== "") && (
                     <button onClick={() => setFilters({ status: [], minBudget: "", maxBudget: "" })} className="text-xs text-[#14A9F9] hover:underline">Clear Filters</button>
                 )}
-             </div>
+              </div>
 
-             {/* Content Area */}
-             <div className="min-h-[500px] space-y-4">
-                {filteredProposals.length === 0 ? (
+              {/* Content Area */}
+              <div className="min-h-[500px] space-y-4">
+                {isLoading && (
+                    <div className="flex justify-center py-20">
+                        <Loader2 className="h-10 w-10 animate-spin text-[#14A9F9]" />
+                    </div>
+                )}
+
+                {error && (
+                    <div className="text-center py-10 text-red-500 bg-white rounded-lg border border-red-100">
+                        <AlertCircle className="h-10 w-10 mx-auto mb-2" />
+                        <p>Failed to load proposals. Please try again.</p>
+                    </div>
+                )}
+
+                {!isLoading && !error && filteredProposals.length === 0 ? (
                     <div className="text-center py-10 text-gray-500 bg-white rounded-lg border border-dashed border-gray-300">
                         <FileText className="h-10 w-10 text-gray-300 mx-auto mb-2" />
                         <p className="font-medium">No proposals found.</p>
                     </div>
                 ) : (
-                    filteredProposals.map((item) => (
+                    filteredProposals.map((item: any) => (
                         <ProposalListCard key={item.id} proposal={item} onViewDetails={handleViewDetails} />
                     ))
                 )}
-             </div>
+              </div>
           </div>
 
           {/* RIGHT COLUMN: MANAGER & PROMO */}
@@ -641,7 +577,7 @@ export default function ProposalsPage() {
                     <Zap className="h-5 w-5 text-yellow-300 fill-yellow-300" />
                  </div>
                  <p className="text-sm text-blue-100 mb-4 leading-relaxed relative z-10">
-                    Proposals sent within the first 24 hours of a job posting are 40% more likely to be viewed.
+                   Proposals sent within the first 24 hours of a job posting are 40% more likely to be viewed.
                  </p>
               </div>
 

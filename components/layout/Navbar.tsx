@@ -1,5 +1,6 @@
+"use client"
 import { AnimatePresence, motion, Variants } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { twMerge } from "tailwind-merge";
 import Link from "next/link";
 import { ClassValue, clsx } from "clsx";
@@ -9,6 +10,8 @@ import {
   ChevronDown,
   Menu,
   X,
+  User,
+  LogOut,
 } from "lucide-react";
 
 // --- Utility for tw-merge ---
@@ -92,9 +95,40 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeMobileCategory, setActiveMobileCategory] = useState<string | null>(null);
 
+  // Authentication State
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userType, setUserType] = useState<'client' | 'freelancer' | null>(null);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+
+  // Check authentication status on component mount
+  useEffect(() => {
+    // Check localStorage for authentication status
+    const authStatus = localStorage.getItem('isLoggedIn');
+    const storedUserType = localStorage.getItem('userType');
+    
+    if (authStatus === 'true' && storedUserType) {
+      setIsLoggedIn(true);
+      setUserType(storedUserType as 'client' | 'freelancer');
+    }
+  }, []);
+
   // Helper to toggle mobile accordions
   const toggleMobileCategory = (category: string) => {
     setActiveMobileCategory(activeMobileCategory === category ? null : category);
+  };
+
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('userType');
+    setIsLoggedIn(false);
+    setUserType(null);
+    setShowProfileDropdown(false);
+  };
+
+  // Get dashboard link based on user type
+  const getDashboardLink = () => {
+    return userType === 'client' ? '/client-dashboard' : '/dashboard';
   };
 
   return (
@@ -109,13 +143,13 @@ export default function Navbar() {
           
           {/* Logo */}
           <div className="flex items-center gap-2 cursor-pointer z-50">
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">HF</div>
+            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold"><img src="./images/Logo/hero-freelancerss.png" alt="HeroFreelancer Logo" /></div>
             <span className="text-xl font-bold text-gray-700">HeroFreelancer</span>
           </div>
           
           {/* ==================== DESKTOP MENU (>768px) ==================== */}
           <div className="hidden md:flex gap-6 lg:gap-8 text-sm font-medium text-gray-600 h-full items-center">
-            <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
+            <Link href="/" className="hover:text-yellow-600 transition-colors">Home</Link>
             
             {/* --- Desktop Dropdown 1: Find Work --- */}
             <div 
@@ -123,7 +157,7 @@ export default function Navbar() {
               onMouseEnter={() => setActiveDropdown('work')}
               onMouseLeave={() => setActiveDropdown(null)}
             >
-              <a href="#" className={cn("transition-colors flex items-center gap-1", activeDropdown === 'work' ? "text-blue-600" : "hover:text-blue-600")}>
+              <a href="#" className={cn("transition-colors flex items-center gap-1", activeDropdown === 'work' ? "text-yellow-600" : "hover:text-yellow-600")}>
                 Find work <ChevronDown size={14} className={cn("transition-transform duration-200", activeDropdown === 'work' ? "rotate-180" : "")}/>
               </a>
               
@@ -171,7 +205,7 @@ export default function Navbar() {
               onMouseEnter={() => setActiveDropdown('freelancers')}
               onMouseLeave={() => setActiveDropdown(null)}
             >
-              <a href="#" className={cn("transition-colors flex items-center gap-1", activeDropdown === 'freelancers' ? "text-blue-600" : "hover:text-blue-600")}>
+              <a href="#" className={cn("transition-colors flex items-center gap-1", activeDropdown === 'freelancers' ? "text-yellow-600" : "hover:text-yellow-600")}>
                 Find Freelancers <ChevronDown size={14} className={cn("transition-transform duration-200", activeDropdown === 'freelancers' ? "rotate-180" : "")}/>
               </a>
               
@@ -211,16 +245,63 @@ export default function Navbar() {
               </AnimatePresence>
             </div>
 
-            <Link href="/login" className="hover:text-blue-600 transition-colors">Log In</Link>
-            <Link href="/signup" className="hover:text-blue-600 transition-colors">Sign Up</Link>
+            {/* Conditional rendering based on authentication status */}
+            {!isLoggedIn ? (
+              <>
+                <Link href="/login" className="hover:text-yellow-600 transition-colors">Log In</Link>
+                <Link href="/registration" className="hover:text-yellow-600 transition-colors">Sign Up</Link>
+              </>
+            ) : (
+              <>
+                {/* Profile Dropdown for logged-in users */}
+                <div 
+                  className="relative h-full flex items-center py-2"
+                  onMouseEnter={() => setShowProfileDropdown(true)}
+                  onMouseLeave={() => setShowProfileDropdown(false)}
+                >
+                  <button className="flex items-center gap-2 hover:text-yellow-600 transition-colors">
+                    <User size={18} />
+                    <span className="capitalize">{userType}</span>
+                    <ChevronDown size={14} className={cn("transition-transform duration-200", showProfileDropdown ? "rotate-180" : "")}/>
+                  </button>
+                  
+                  <AnimatePresence>
+                    {showProfileDropdown && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute top-full right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 cursor-default"
+                      >
+                        <Link 
+                          href={getDashboardLink()} 
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          Go to Dashboard
+                        </Link>
+                        <button 
+                          onClick={handleLogout}
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+                        >
+                          <LogOut size={16} />
+                          Log Out
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </>
+            )}
             
             
             <motion.button 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 lg:px-6 lg:py-2.5 rounded-full text-xs lg:text-sm font-medium transition-colors shadow-blue-200 shadow-lg whitespace-nowrap"
-            ><Link href="/signup">
-              Post a project
+              className="bg-yellow-400 hover:bg-yellow-600 text-white px-5 py-2 lg:px-6 lg:py-2.5 rounded-full text-xs lg:text-sm font-medium transition-colors shadow-blue-200 shadow-lg whitespace-nowrap"
+            >
+              <Link href="/registration">
+                Post a project
               </Link>
             </motion.button>
             
@@ -259,13 +340,13 @@ export default function Navbar() {
 
               {/* Mobile Links */}
               <div className="flex flex-col gap-6">
-                <a href="#" className="text-lg font-bold text-gray-800">Home</a>
+                <Link href="/" className="text-lg font-bold text-gray-800 hover:text-yellow-600">Home</Link>
 
                 {/* --- Mobile Accordion 1: Find Work --- */}
                 <div>
                   <button 
                     onClick={() => toggleMobileCategory('work')}
-                    className="flex justify-between items-center w-full text-lg font-bold text-gray-800 mb-2"
+                    className="flex justify-between items-center w-full text-lg font-bold text-gray-800 mb-2 hover:text-yellow-600"
                   >
                     Find Work <ChevronDown size={20} className={cn("transition-transform", activeMobileCategory === 'work' ? "rotate-180" : "")}/>
                   </button>
@@ -335,14 +416,37 @@ export default function Navbar() {
                   </AnimatePresence>
                 </div>
 
-                <Link href="/login" className="text-lg font-bold text-gray-800">Log In</Link>
-                <Link href="/signup" className="text-lg font-bold text-white bg-blue-600 px-4 py-2 rounded-full shadow-lg shadow-blue-200 inline-block text-center">Sign Up</Link>
-                {/* <a href="#" className="text-lg font-bold text-gray-800">Sign Up</a> */}
+                {/* Conditional rendering for mobile menu */}
+                {!isLoggedIn ? (
+                  <>
+                    <Link href="/login" className="text-lg font-bold text-gray-800">Log In</Link>
+                    <Link href="/registration" className="text-lg font-bold text-white bg-blue-600 px-4 py-2 rounded-full shadow-lg shadow-blue-200 inline-block text-center">Sign Up</Link>
+                  </>
+                ) : (
+                  <>
+                    <Link 
+                      href={getDashboardLink()} 
+                      className="text-lg font-bold text-white bg-blue-600 px-4 py-2 rounded-full shadow-lg shadow-blue-200 inline-block text-center flex items-center justify-center gap-2"
+                    >
+                      <User size={20} />
+                      Go to Dashboard
+                    </Link>
+                    <button 
+                      onClick={handleLogout}
+                      className="text-lg font-bold text-red-600 bg-red-50 px-4 py-2 rounded-full inline-block text-center flex items-center justify-center gap-2"
+                    >
+                      <LogOut size={20} />
+                      Log Out
+                    </button>
+                  </>
+                )}
 
                 
                 
                 <button className="bg-blue-500 text-white w-full py-3 rounded-xl font-bold shadow-lg shadow-blue-200 mt-4">
-                  Post a Project
+                  <Link href="/registration">
+                    Post a project
+                  </Link>
                 </button>
               </div>
             </div>

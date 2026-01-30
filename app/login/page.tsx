@@ -33,12 +33,19 @@ export default function LoginPage() {
 
       if (userType === "client") {
         result = await loginClient({ email, password }).unwrap();
+        // Set localStorage for navbar compatibility
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('userType', 'client');
       } else {
         result = await loginFreelancer({ email, password }).unwrap();
+        // Set localStorage for navbar compatibility
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('userType', 'freelancer');
       }
 
       toast.success(result.message || "Login successful");
 
+      // Navigate to appropriate dashboard
       if (result.user.role === "client") {
         router.push("/client-dashboard");
       } else {
