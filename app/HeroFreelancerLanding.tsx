@@ -20,7 +20,7 @@ export default function HeroFreelancersLanding() {
     <div className="min-h-screen bg-white">
     
       <Navbar />
-      <LaunchModalWrapper />
+      
 
       <HeroSection />
       <TrustStrip />

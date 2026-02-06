@@ -62,6 +62,19 @@ export const freelancerAuthApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Auth"],
     }),
+
+    updateFreelancerDetails : builder.mutation<
+      { message: string },
+      FormData
+    >({
+      query: (formData) => ({
+        url: "/api/freelancer/update-profile",
+        method: "PUT",
+        body: formData,
+      }),
+      invalidatesTags: ["Auth"],
+    }),
+
   }),
 });
 
@@ -71,4 +84,6 @@ export const {
   useResendFreelancerOtpMutation,
   useLoginFreelancerMutation,
   useLogoutFreelancerMutation,
+
+  useUpdateFreelancerDetailsMutation,
 } = freelancerAuthApi;

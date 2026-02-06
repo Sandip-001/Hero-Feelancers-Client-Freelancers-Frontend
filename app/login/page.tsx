@@ -150,14 +150,14 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <div className="relative my-8">
+            {/* <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-2 bg-white text-gray-500">or</span>
-              </div>
-            </div>
+              </div> 
+            </div> 
 
             <div className="space-y-3">
               <button className="w-full bg-white border border-gray-300 text-gray-700 font-medium py-2.5 rounded-full hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
@@ -176,14 +176,14 @@ export default function LoginPage() {
                 />
                 Continue with Apple
               </button>
-            </div>
+            </div> */}
           </div>
 
           <div className="bg-gray-50 p-6 text-center border-t border-gray-100">
             <p className="text-sm text-gray-600">
               Don't have an account?{" "}
               <Link
-                href="/signup"
+                href="/registration"
                 className="text-blue-600 font-semibold hover:underline"
               >
                 Sign Up

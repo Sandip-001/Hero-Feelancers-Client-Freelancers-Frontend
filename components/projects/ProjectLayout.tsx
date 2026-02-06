@@ -75,15 +75,15 @@ export const ManagerProfileModal = ({ isOpen, onClose, manager }: { isOpen: bool
         <div className="px-6 pb-6 -mt-12 flex flex-col items-center">
           <div className="relative">
             <img 
-              src={manager.avatar} 
-              alt={manager.name} 
+              src={manager.profileImage} 
+              alt={manager.fullName} 
               className="w-24 h-24 rounded-full border-4 border-white shadow-md object-cover"
             />
             <div className="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full" title="Online"></div>
           </div>
           
-          <h3 className="mt-3 text-xl font-bold text-gray-900">{manager.name}</h3>
-          <p className="text-sm text-[#14A9F9] font-medium">{manager.role}</p>
+          <h3 className="mt-3 text-xl font-bold text-gray-900">{manager.fullName }</h3>
+          <p className="text-sm text-[#14A9F9] font-medium">{manager.userType}</p>
           
           <div className="mt-4 w-full space-y-3">
             <div className="flex items-center justify-center p-2 bg-gray-50 rounded-lg border border-gray-100">

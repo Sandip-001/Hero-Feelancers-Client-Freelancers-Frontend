@@ -40,6 +40,14 @@
         providesTags: ["Jobs"],
       }),
 
+      getproposalByJobIdandFreelacnerId: builder.query({
+        query: ({jobId, freelancerId}) => ({
+          url: `/api/job-proposals/proposal/${jobId}/${freelancerId}`,
+          method: "GET"
+        }),
+        providesTags: ["Jobs"],
+      }),
+
       // 5. Get My Proposals (Freelancer View)
       // Matches Postman: /api/job-proposals?freelancerId=9&status=applied
       getMyProposals: builder.query<any, { freelancerId: string | number; status?: string }>({
@@ -86,5 +94,7 @@
     useGetProposalsByJobIdQuery,
     useGetMyProposalsQuery,
     useAssignFreelancerMutation,
-    useGenerateProposalMutation
+    useGenerateProposalMutation,
+
+    useGetproposalByJobIdandFreelacnerIdQuery,
   } = proposalsApi;

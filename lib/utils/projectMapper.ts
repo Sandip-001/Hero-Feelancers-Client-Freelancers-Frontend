@@ -17,7 +17,7 @@ export const mapApiJobToUI = (apiJob: any): Project => {
     type: (apiJob.priceType || "").toLowerCase() === "hourly" ? "Hourly" : "Fixed",
     
     experienceLevel: apiJob.experienceLevel || "Intermediate",
-    postedTime: new Date(apiJob.createdAt || Date.now()).toLocaleDateString(),
+    postedTime: apiJob.createdAt,
     dateRange: apiJob.hireTimeline || "Flexible",
     proposals: apiJob.proposalCount || 0,
     

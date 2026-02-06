@@ -28,8 +28,8 @@ export const bookmarksApi = baseApi.injectEndpoints({
     // 3. Remove Bookmark
     // Matches Postman: DELETE {{baseurl}}/api/job-bookmarks/:id
     removeBookmark: builder.mutation<any, number | string>({
-      query: (id) => ({
-        url: `/api/job-bookmarks/${id}`,
+      query: (jobId) => ({
+        url: `/api/job-bookmarks/${jobId}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Bookmarks"], 

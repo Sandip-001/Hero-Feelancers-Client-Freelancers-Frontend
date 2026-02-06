@@ -2,7 +2,6 @@ import { baseApi } from "./baseApi";
 
 export const jobsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    
     // --- QUERIES (GET) ---
 
     // 1. Get Client's Own Jobs (For Client Dashboard)
@@ -23,6 +22,12 @@ export const jobsApi = baseApi.injectEndpoints({
       providesTags: ["Jobs"],
     }),
 
+    getAwardedJobsForFreelancer: builder.query({
+      query: ({ freelancerId, status }) =>
+        `api/jobs?freelancerId=${freelancerId}&status=${status}`,
+      providesTags: ["Jobs"],
+    }),
+
     // --- MUTATIONS (POST/PUT/DELETE) ---
 
     // 4. Create Job (Client)
@@ -37,7 +42,10 @@ export const jobsApi = baseApi.injectEndpoints({
 
     // 5. Update Job (Client)
     // Supports both JSON and FormData (for file updates)
-    updateJob: builder.mutation<any, { id: number | string; data: FormData | any }>({
+    updateJob: builder.mutation<
+      any,
+      { id: number | string; data: FormData | any }
+    >({
       query: ({ id, data }) => ({
         url: `/api/jobs/${id}`,
         method: "PUT",
@@ -56,7 +64,10 @@ export const jobsApi = baseApi.injectEndpoints({
     }),
 
     // 7. Assign Freelancer / Award Job (Client)
-    assignFreelancer: builder.mutation<any, { jobId: string | number; freelancerId: string | number }>({
+    assignFreelancer: builder.mutation<
+      any,
+      { jobId: string | number; freelancerId: string | number }
+    >({
       query: (body) => ({
         url: "/api/jobs/award",
         method: "POST",
@@ -66,12 +77,16 @@ export const jobsApi = baseApi.injectEndpoints({
     }),
 
     // 8. Generate Job Description via AI (Client)
-    generateJobDescription: builder.mutation<any, { title: string; skills: string[] }>({
+    generateJobDescription: builder.mutation<
+      any,
+      { title: string}
+    >({
       query: (body) => ({
-        url: "/api/jobs/ai-generate", // Maps to: "generate job description through ai"
+        url: "/api/ai/generate-job-description", // Maps to: "generate job description through ai"
         method: "POST",
         body,
       }),
+      invalidatesTags: ["Jobs"],
     }),
 
     // 9. Toggle Bookmark Job (Freelancer)
@@ -83,13 +98,10 @@ export const jobsApi = baseApi.injectEndpoints({
       invalidatesTags: ["Jobs"],
     }),
 
-
     getCurrenices: builder.query({
-            query: () => "/api/currency",
-            providesTags: ["Jobs"],
-        }),
-
-
+      query: () => "/api/currency",
+      providesTags: ["Jobs"],
+    }),
   }),
 });
 
@@ -98,7 +110,9 @@ export const {
   useGetClientJobsQuery,
   useGetFreelancerJobsQuery,
   useGetJobByIdQuery,
-  
+
+  useGetAwardedJobsForFreelancerQuery,
+
   // Mutations
   useCreateJobMutation,
   useUpdateJobMutation,
@@ -106,5 +120,5 @@ export const {
   useAssignFreelancerMutation,
   useGenerateJobDescriptionMutation,
   useToggleBookmarkMutation,
-  useGetCurrenicesQuery
+  useGetCurrenicesQuery,
 } = jobsApi;

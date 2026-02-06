@@ -1,7 +1,7 @@
 export type Milestone = { name: string; description: string; amount: string; date: string; completed: boolean; };
 export type Applicant = { id: number; name: string; rating: number; earnings: string; appliedTime: string; about: string; avatar: string; };
 export type ClientInfo = { name: string; location: string; rating: number; totalSpent: string; memberSince: string; verified: boolean; industry?: string; jobCount?: number; };
-export type ManagerInfo = { name: string; role: string; phone: string; whatsapp: string; avatar: string; };
+export type ManagerInfo = { name?:string, role?:string, avatar?:string, fullName?: string; userType?: string; phone: string; whatsapp: string; profileImage?: string; };
 
 export type Project = {
   id: number; proposalId?: string | number; title: string; category: string; description: string; 
