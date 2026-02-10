@@ -19,6 +19,7 @@ import ClientGuard from "./clientGuard";
 import { useGetMeQuery } from "../redux/api/auth.api";
 import { useLogoutClientMutation } from "../redux/api/clientAuth.api";
 import { toast } from "sonner";
+import { connectSocket } from "../socket";
 
 const INITIAL_NOTIFICATIONS = [
   {
@@ -66,6 +67,10 @@ export default function ClientDashboardLayout({
   const notificationRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    connectSocket();
+  }, []);
+
   // Combined Click Outside Logic
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -102,16 +107,16 @@ export default function ClientDashboardLayout({
   const handleLogout = async () => {
     try {
       await logout().unwrap();
-      
+
       // Clear localStorage
-      localStorage.removeItem('isLoggedIn');
-      localStorage.removeItem('userType');
-      
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("userType");
+
       setIsProfileOpen(false);
       toast.success("Logged out successfully");
-      
+
       // Redirect to home page
-      router.push('/');
+      router.push("/");
     } catch (error) {
       toast.error("Logout failed");
       console.error("Logout failed:", error);

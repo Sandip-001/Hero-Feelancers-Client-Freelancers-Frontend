@@ -28,6 +28,7 @@ export default function AppliedPage() {
     useState<ManagerInfo>(DEFAULT_MANAGER);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [withdrawingId, setWithdrawingId] = useState<number | null>(null);
+  const [sendMessage, setSendMessage] = useState(true)
 
   // 1. Fetch Current User
   const { data: authData, isLoading: isAuthLoading } = useGetMeQuery();
@@ -106,6 +107,7 @@ export default function AppliedPage() {
                 onViewDetails={(p: any) => setSelectedProject(p)}
                 onWithdraw={() => handleWithdraw(proposal.id)}
                 isWithdrawing={isWithdrawing}
+                sendMessage = {sendMessage}
               />
             ))
           ) : (

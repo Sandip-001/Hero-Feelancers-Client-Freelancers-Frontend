@@ -1,17 +1,42 @@
 "use client";
 
+import { useGetMeQuery } from "@/app/redux/api/auth.api";
+import { useGetchatroomsQuery } from "@/app/redux/api/chatroom.api";
 import ChatWindow from "@/components/layout/chatWindow";
 import MessagesList from "@/components/layout/messagesList";
 import WorkStreamRightBar from "@/components/layout/workstreamRightBar";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
-const cn = (...classes: string[]) => classes.filter(Boolean).join(' ');
+const cn = (...classes: string[]) => classes.filter(Boolean).join(" ");
 
 export default function WorkstreamsPage() {
   // Initialize as NULL so mobile shows the list first
-  const [selectedChatId, setSelectedChatId] = useState<string | null>(null); 
+  const searchParams = useSearchParams();
+  const roomIdFromUrl = searchParams.get("roomId");
+
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(
+    roomIdFromUrl,
+  );
+
   const [showRightSidebar, setShowRightSidebar] = useState(false); // Default closed for cleaner start
   const [isMobile, setIsMobile] = useState(false);
+
+  // 2. GET CURRENT USER ID
+  const { data: authData, isLoading: isAuthLoading } = useGetMeQuery();
+  const freelancerId = authData?.user?.id;
+
+  // 3. PASS ID TO QUERY (AND SKIP IF NOT READY)
+  const {
+    data: chatrooms,
+    isLoading: isListLoading,
+    refetch,
+  } = useGetchatroomsQuery(
+    { userId: freelancerId, userType: "freelancer" },
+    { skip: !freelancerId },
+  );
+
+  //console.log("Chatrooms", chatrooms?.data)
 
   // Responsive Check
   useEffect(() => {
@@ -24,10 +49,16 @@ export default function WorkstreamsPage() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  useEffect(() => {
+    if (roomIdFromUrl) {
+      setSelectedChatId(roomIdFromUrl);
+    }
+  }, [roomIdFromUrl]);
+
   const handleSelectMessage = (id: string) => {
     setSelectedChatId(id);
     // On mobile, ensure sidebar is closed when entering a new chat
-    if (isMobile) setShowRightSidebar(false); 
+    if (isMobile) setShowRightSidebar(false);
   };
 
   const handleBackToList = () => {
@@ -42,34 +73,41 @@ export default function WorkstreamsPage() {
   return (
     // Main container - Fixed height, no overflow on body
     <div className="flex h-[calc(100vh-64px)] bg-slate-50 overflow-hidden relative lg:pb-0 pb-[64px]">
-      
       {/* ---------------- LEFT SIDEBAR (MESSAGES LIST) ---------------- */}
-      <div 
+      <div
         className={cn(
           "bg-white h-full flex-shrink-0 border-r border-slate-200 transition-all duration-300 z-10",
           // Mobile: Full width if no chat selected
           // Desktop: Fixed width always visible
-          isMobile 
-            ? (selectedChatId ? "hidden" : "w-full absolute inset-0") 
-            : "w-[320px] xl:w-[380px] relative"
+          isMobile
+            ? selectedChatId
+              ? "hidden"
+              : "w-full absolute inset-0"
+            : "w-[320px] xl:w-[380px] relative",
         )}
       >
-        <MessagesList 
+        <MessagesList
+          refetchChatrooms={refetch}
+          userType="freelancer"
+          chatRooms={chatrooms?.data}
+          loading={isListLoading}
           selectedMessageId={selectedChatId || ""}
-          onSelectMessage={handleSelectMessage} 
+          onSelectMessage={handleSelectMessage}
         />
       </div>
 
       {/* ---------------- MIDDLE (CHAT WINDOW) ---------------- */}
-      <div 
+      <div
         className={cn(
           "flex-1 bg-slate-50 h-full relative flex flex-col min-w-0",
           // Mobile: Hidden if no chat selected
-          isMobile && !selectedChatId ? "hidden" : "flex"
+          isMobile && !selectedChatId ? "hidden" : "flex",
         )}
       >
         {selectedChatId ? (
-          <ChatWindow 
+          <ChatWindow
+            key={selectedChatId}
+            chatRoomId={selectedChatId}
             onBack={handleBackToList}
             onToggleInfo={toggleRightSidebar}
             isSidebarOpen={showRightSidebar}
@@ -77,11 +115,15 @@ export default function WorkstreamsPage() {
         ) : (
           /* Empty State (Desktop Only) */
           <div className="hidden lg:flex flex-col items-center justify-center h-full text-slate-400">
-             <div className="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
-                <span className="text-3xl">💬</span>
-             </div>
-             <h3 className="text-lg font-semibold text-slate-700">Select a Workstream</h3>
-             <p className="text-sm text-slate-500">Choose a conversation to view details.</p>
+            <div className="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
+              <span className="text-3xl">💬</span>
+            </div>
+            <h3 className="text-lg font-semibold text-slate-700">
+              Select a Workstream
+            </h3>
+            <p className="text-sm text-slate-500">
+              Choose a conversation to view details.
+            </p>
           </div>
         )}
       </div>
@@ -90,20 +132,19 @@ export default function WorkstreamsPage() {
       {/* Fixed Logic: Positioned ABSOLUTE on both Mobile and Desktop.
          This ensures it overlays the chat instead of shrinking it.
       */}
-      <div 
+      <div
         className={cn(
           "h-full bg-white shadow-2xl border-l border-slate-200 absolute right-0 top-0 z-20 transition-transform duration-300 ease-in-out lg:pb-0 pb-[64px]",
           // Dimensions
-          "w-full md:w-[380px]", 
+          "w-full md:w-[380px]",
           // Toggle Logic (Slide in/out)
-          showRightSidebar ? "translate-x-0" : "translate-x-full"
+          showRightSidebar ? "translate-x-0" : "translate-x-full",
         )}
       >
-         <div className="w-full h-full">
-            <WorkStreamRightBar onClose={() => setShowRightSidebar(false)} />
-         </div>
+        <div className="w-full h-full">
+          <WorkStreamRightBar onClose={() => setShowRightSidebar(false)} />
+        </div>
       </div>
-
     </div>
   );
 }

@@ -1,5 +1,4 @@
-"use client";
-
+"use client"
 import {
   ArrowLeft,
   BarChart3,
@@ -44,6 +43,12 @@ import {
 } from "@/app/redux/api/proposals.api";
 
 import { useGetClientJobsQuery } from "@/app/redux/api/jobs.api";
+import { useGetMeQuery } from "@/app/redux/api/auth.api";
+import {
+  useCreateChatRoomMutation,
+  useGetchatroomsQuery,
+} from "@/app/redux/api/chatroom.api";
+import { useRouter } from "next/navigation";
 
 // --- INTERFACES ---
 interface Review {
@@ -71,6 +76,7 @@ interface Proposal {
   hourlyRate: string;
   skills: string[];
   bio: string;
+  currency: string;
   reviews: Review[];
   status?: string;
   submittedOn?: string;
@@ -430,8 +436,9 @@ function ProposalBriefModal({
                 <div className="grid grid-cols-3 gap-6 border-b border-gray-100 pb-8">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 text-gray-900 font-bold">
-                      <DollarSign size={18} className="text-gray-600" />
-                      <span>₹{proposal.bid}</span>
+                      <span>
+                        {proposal.currency === "INR" ? "₹" : "$"} {proposal.bid}
+                      </span>
                     </div>
                     <p className="text-xs text-gray-400 font-medium">
                       Proposed Amount
@@ -771,6 +778,8 @@ const JobCard = ({
 
 /* ------------------- Main Component ------------------- */
 export default function ProposalPage() {
+  const router = useRouter();
+
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [profileToView, setProfileToView] = useState<Proposal | null>(null);
   const [proposalBrief, setProposalBrief] = useState<Proposal | null>(null);
@@ -813,6 +822,73 @@ export default function ProposalPage() {
     pollingInterval: 15000,
   });
 
+  const { data: authData } = useGetMeQuery();
+
+  const { data: chatrooms } = useGetchatroomsQuery(
+    {
+      userId: authData?.user?.id,
+      userType: authData?.user?.userType,
+    },
+    { skip: !authData?.user?.id },
+  );
+
+  const [createChatRoom, { isLoading: isCreatingChatRoom }] =
+    useCreateChatRoomMutation();
+
+  const handleOpenChat = async (proposal: any) => {
+    const jobId = selectedJob?.id;
+    const jobProposalId = proposal.id;
+    const freelancerId = proposal.freelancerId;
+    const clientId = authData?.user?.id;
+    const managerId = proposal?.Job?.RelationShipManager?.id || null;
+
+    if (!jobId || !jobProposalId || !freelancerId || !clientId) {
+      toast.error("Missing chat data");
+      return;
+    }
+
+    // Check if room already exists
+    const existingRoom = chatrooms?.data?.find(
+      (room: any) => room.jobProposalId === jobProposalId,
+    );
+
+    const existingRoomId = existingRoom?.id;
+
+    if (existingRoomId) {
+      toast.success("Opening existing chat");
+      router.push(`/messages?roomId=${existingRoomId}`);
+      return;
+    }
+
+    // Create new room
+    try {
+      const res = await createChatRoom({
+        jobId,
+        jobProposalId,
+        freelancerId,
+        clientId,
+        managerId,
+      }).unwrap();
+
+      const roomId = res?.room?.id;
+
+      if (roomId) {
+        toast.success("Chat opened");
+        router.push(`/messages?roomId=${roomId}`);
+      }
+    } catch (err: any) {
+      const existingRoomId = err?.data?.room?.id;
+
+      if (existingRoomId) {
+        toast.success("Opening existing chat");
+        router.push(`/messages?roomId=${existingRoomId}`);
+        return;
+      }
+
+      toast.error(err?.data?.message || "Message Failed");
+    }
+  };
+
   // Filtering Logic for JOBS
   const filteredJobs = useMemo(() => {
     return jobsList.filter((job: any) => {
@@ -850,7 +926,9 @@ export default function ProposalPage() {
 
         // --- NAME / RATE FIX: Directly use capitalized 'Freelancer' key ---
         name: p.Freelancer?.fullName || "Unknown Freelancer",
-        hourlyRate: p.Freelancer?.hourlyRate
+
+        hourlyRate: p.Freelancer?.hourlyRate || 0,
+        hourlyRateDisplay: p.Freelancer?.hourlyRate
           ? `₹${p.Freelancer.hourlyRate}/hr`
           : "N/A",
 
@@ -864,6 +942,7 @@ export default function ProposalPage() {
 
         coverLetter: p.coverLetter,
         bid: p.proposedAmount,
+        currency: p.Job?.currency,
         delivery: p.duration,
         status: p.status,
         submittedOn: p.createdAt
@@ -885,15 +964,16 @@ export default function ProposalPage() {
         const matchText =
           (p.name?.toLowerCase() || "").includes(filterText.toLowerCase()) ||
           (p.title?.toLowerCase() || "").includes(filterText.toLowerCase());
-        const rateVal = parseRate(p.hourlyRate || "0");
+        const rateVal = p.hourlyRate || 0;
         const matchRate = rateVal <= filterRate;
+
         const matchRating = filterRating
           ? (p.rating || 0) >= filterRating
           : true;
         const pSkills = p.skills || [];
         const matchSkills =
           filterSkills.length > 0
-            ? filterSkills.every((skill: string) => pSkills.includes(skill))
+            ? filterSkills.some((skill: string) => pSkills.includes(skill))
             : true;
         return matchText && matchRate && matchRating && matchSkills;
       });
@@ -905,6 +985,20 @@ export default function ProposalPage() {
     filterRating,
     filterSkills,
   ]);
+
+  const relationshipManager = useMemo(() => {
+    if (!selectedJob) return null;
+
+    const firstProposal = proposalsResponse?.data?.[0];
+
+    if (!firstProposal) return undefined;
+
+    const manager = firstProposal.Job?.RelationShipManager;
+
+    if (!manager) return undefined;
+
+    return manager;
+  }, [selectedJob, proposalsResponse]);
 
   const paginatedProposals = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -1211,7 +1305,10 @@ export default function ProposalPage() {
                           </div>
                           <div className="flex-1">
                             {/* Integrated FreelancerInfo for List View */}
-                            <FreelancerInfo name={p.name} rate={p.hourlyRate} />
+                            <FreelancerInfo
+                              name={p.name}
+                              rate={p.hourlyRateDisplay}
+                            />
                             <div className="flex flex-wrap items-center gap-x-2 mt-1.5">
                               <p className="text-xs text-gray-500 font-medium">
                                 {p.title}
@@ -1245,7 +1342,12 @@ export default function ProposalPage() {
                       <div className="py-3">
                         <div className="flex flex-wrap gap-4 sm:gap-10 mb-3">
                           <Meta label="Bid Amount">
-                            <IndianRupee size={14} strokeWidth={2.5} /> {p.bid}
+                            {p.currency === "INR" ? (
+                              <IndianRupee size={14} strokeWidth={2.5} />
+                            ) : (
+                              <DollarSign size={14} strokeWidth={2.5} />
+                            )}{" "}
+                            {p.bid}
                           </Meta>
                           <Meta label="Delivery">
                             <Clock size={14} strokeWidth={2.5} /> {p.delivery}
@@ -1273,14 +1375,14 @@ export default function ProposalPage() {
                         >
                           Profile
                         </ActionBtn>
-                        <Link href="/messages">
-                          <ActionBtn
-                            color="emerald"
-                            onClick={() => handleMessage(p.name)}
-                          >
-                            <MessageCircle size={14} /> Message
-                          </ActionBtn>
-                        </Link>
+                        <ActionBtn
+                          color="emerald"
+                          onClick={() => handleOpenChat(p)}
+                          disabled={isCreatingChatRoom}
+                        >
+                          <MessageCircle size={14} />
+                          {isCreatingChatRoom ? "Opening..." : "Message"}
+                        </ActionBtn>
                       </div>
                     </Card>
                   ))
@@ -1344,46 +1446,75 @@ export default function ProposalPage() {
               className={`transition-all duration-300 ease-in-out overflow-hidden ${isRMOpen ? "max-h-[500px] border-t border-gray-100" : "max-h-0"}`}
             >
               <div className="p-4">
-                <div className="h-20 bg-indigo-500 w-full relative rounded-lg mb-10">
-                  <div className="absolute -bottom-8 left-1/2 -translate-x-1/2">
-                    <img
-                      src="https://i.pravatar.cc/150?img=11"
-                      className="w-16 h-16 rounded-full border-4 border-white shadow-lg object-cover"
-                      alt="Manager"
-                    />
+                {/* Case 1: No job selected */}
+                {!selectedJob && (
+                  <div className="text-center py-6 text-gray-500 text-sm">
+                    Please select a job to view the assigned manager.
                   </div>
-                </div>
-                <div className="text-center mb-4">
-                  <h3 className="font-bold text-slate-800 text-base">
-                    Rohan Malhotra
-                  </h3>
-                  <p className="text-indigo-500 font-semibold text-xs">
-                    Assigned Manager
-                  </p>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <Link
-                    href="/messages"
-                    className="flex flex-col items-center justify-center py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors gap-1 shadow-sm no-underline"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    <span className="text-[9px] font-bold">Chat</span>
-                  </Link>
-                  <a
-                    href="#"
-                    className="flex flex-col items-center justify-center py-2 bg-emerald-50 text-white rounded-lg hover:bg-emerald-600 transition-colors gap-1 shadow-sm no-underline"
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    <span className="text-[9px] font-bold">WhatsApp</span>
-                  </a>
-                  <a
-                    href="tel:+15550000000"
-                    className="flex flex-col items-center justify-center py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors gap-1 shadow-sm no-underline"
-                  >
-                    <Phone className="w-4 h-4" />
-                    <span className="text-[9px] font-bold">Call</span>
-                  </a>
-                </div>
+                )}
+
+                {/* Case 2: Job selected but no manager */}
+                {selectedJob && relationshipManager === undefined && (
+                  <div className="text-center py-6 text-gray-500 text-sm">
+                    No manager assigned yet. Please wait.
+                  </div>
+                )}
+
+                {/* Case 3: Manager exists */}
+                {selectedJob && relationshipManager && (
+                  <>
+                    <div className="h-20 bg-indigo-500 w-full relative rounded-lg mb-10">
+                      <div className="absolute -bottom-8 left-1/2 -translate-x-1/2">
+                        <img
+                          src={
+                            relationshipManager.profileImage ||
+                            "https://i.pravatar.cc/150"
+                          }
+                          className="w-16 h-16 rounded-full border-4 border-white shadow-lg object-cover"
+                          alt="Manager"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="text-center mb-4">
+                      <h3 className="font-bold text-slate-800 text-base">
+                        {relationshipManager.fullName}
+                      </h3>
+                      <p className="text-indigo-500 font-semibold text-xs">
+                        Assigned Manager
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      <Link
+                        href="/messages"
+                        className="flex flex-col items-center justify-center py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors gap-1 shadow-sm no-underline"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        <span className="text-[9px] font-bold">Chat</span>
+                      </Link>
+
+                      <a
+                        href={`https://wa.me/${relationshipManager.whatsapp?.replace(
+                          /\D/g,
+                          "",
+                        )}`}
+                        className="flex flex-col items-center justify-center py-2 bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors gap-1 shadow-sm no-underline"
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                        <span className="text-[9px] font-bold">WhatsApp</span>
+                      </a>
+
+                      <a
+                        href={`tel:${relationshipManager.phone}`}
+                        className="flex flex-col items-center justify-center py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors gap-1 shadow-sm no-underline"
+                      >
+                        <Phone className="w-4 h-4" />
+                        <span className="text-[9px] font-bold">Call</span>
+                      </a>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>

@@ -6,6 +6,6 @@ export const baseApi = createApi({
     baseUrl: process.env.NEXT_PUBLIC_API_URL,
     credentials: "include", // 🔥 REQUIRED for auth cookies
   }),
-  tagTypes: ["Auth", "Jobs", "NewsLetter", "CTAEnquiry", "Bookmarks", "FreelancerWallet", "Portfolio",],
+  tagTypes: ["Auth", "Jobs", "NewsLetter", "CTAEnquiry", "Bookmarks", "FreelancerWallet", "Portfolio", "Chatroom", "ChatMessage"],
   endpoints: () => ({}),
 });

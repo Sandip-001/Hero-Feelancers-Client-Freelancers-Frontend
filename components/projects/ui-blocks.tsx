@@ -49,6 +49,10 @@ import {
 } from "@/app/redux/api/bookmarks.api";
 import { toast } from "sonner";
 import { formatMemberSince } from "@/lib/utils/formatMemberSince";
+import {
+  useCreateChatRoomMutation,
+  useGetchatroomsQuery,
+} from "@/app/redux/api/chatroom.api";
 
 // ==============================================================================
 // 1. BASE UI COMPONENTS (Reusable Helpers)
@@ -750,14 +754,72 @@ export const AppliedCard = ({
   onViewDetails,
   onWithdraw,
   isWithdrawing,
+  sendMessage,
 }: {
   project: any;
   onViewManager: (m: ManagerInfo) => void;
   onViewDetails: (p: Project) => void;
   onWithdraw?: () => void;
   isWithdrawing?: boolean;
+  sendMessage?: boolean;
 }) => {
   const router = useRouter();
+
+  const { data: authData } = useGetMeQuery();
+
+  const { data: chatrooms } = useGetchatroomsQuery(
+    {
+      userId: authData?.user?.id,
+      userType: authData?.user?.userType,
+    },
+    { skip: !authData?.user?.id },
+  );
+
+  const [createChatRoom, { isLoading: isCreatingChatRoom }] =
+    useCreateChatRoomMutation();
+
+  const existingRoom = chatrooms?.data?.find(
+    (room: any) => room.jobProposalId === project?.id,
+  );
+
+  const existingRoomId = existingRoom?.id;
+
+  const handleOpenChat = async () => {
+    // If room already exists → open directly
+    if (existingRoomId) {
+      toast.success("Opening existing chat");
+      router.push(`/workstreams?roomId=${existingRoomId}`);
+      return;
+    }
+
+    // Else create new room
+    try {
+      const res = await createChatRoom({
+        jobId: project?.Job?.id,
+        jobProposalId: project?.id,
+        freelancerId: project?.Freelancer?.id,
+        clientId: project.Job?.Client?.id,
+        managerId: project?.Job?.RelationShipManager?.id,
+      }).unwrap();
+
+      const roomId = res?.room?.id;
+
+      if (roomId) {
+        toast.success("Chat opened");
+        router.push(`/workstreams?roomId=${roomId}`);
+      }
+    } catch (err: any) {
+      const existingRoomId = err?.data?.room?.id;
+
+      if (existingRoomId) {
+        toast.success("Opening existing chat");
+        router.push(`/workstreams?roomId=${existingRoomId}`);
+        return;
+      }
+
+      toast.error(err?.data?.message || "Message Failed");
+    }
+  };
 
   const projectStatusStyles: Record<string, string> = {
     applied: "bg-blue-50 text-blue-700 border-blue-100",
@@ -868,6 +930,23 @@ export const AppliedCard = ({
             <p className="text-xs text-center text-gray-400 mt-2 italic">
               No manager assigned yet
             </p>
+          )}
+
+          {sendMessage && (
+            <Button
+              variant="green"
+              className="w-full h-11 font-semibold"
+              onClick={handleOpenChat}
+              disabled={isCreatingChatRoom}
+            >
+              {isCreatingChatRoom ? (
+                <Loader2 className="animate-spin h-4 w-4" />
+              ) : existingRoomId ? (
+                "Open Chat"
+              ) : (
+                "Send Message"
+              )}
+            </Button>
           )}
         </div>
       </div>
@@ -1334,9 +1413,7 @@ export const ProposalView = ({
         freelancerName,
         experience,
       }).unwrap();
-      setCoverLetter(
-        res.proposal || "Generated description...",
-      );
+      setCoverLetter(res.proposal || "Generated description...");
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to Genrate");
     }
@@ -1531,7 +1608,6 @@ export const ProposalView = ({
                     : "Generate Cover Letter with AI"}
                 </button>
               </div>
-
 
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
                 <Button variant="outline" onClick={onBack}>
