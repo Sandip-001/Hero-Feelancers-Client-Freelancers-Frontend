@@ -28,6 +28,7 @@ import React, {
   useMemo,
   useLayoutEffect,
 } from "react";
+import { toast } from "sonner";
 
 const cn = (...classes: string[]) => classes.filter(Boolean).join(" ");
 
@@ -190,12 +191,11 @@ export default function ChatWindow({
   }, [chatRoomId]);
 
   useLayoutEffect(() => {
-  if (!scrollRef.current) return;
+    if (!scrollRef.current) return;
 
-  const el = scrollRef.current;
-  el.scrollTop = el.scrollHeight;
-}, [messages, chatRoomId, isTyping]);
-
+    const el = scrollRef.current;
+    el.scrollTop = el.scrollHeight;
+  }, [messages, chatRoomId, isTyping]);
 
   //Track scroll position for floating button
   useEffect(() => {
@@ -345,6 +345,16 @@ export default function ChatWindow({
       });
     };
 
+    const handleBlocked = (data: any) => {
+      toast.error(data.error);
+    };
+
+    const handleRemoved = (data: any) => {
+      setMessages((prev) =>
+        prev.filter((m) => Number(m.id) !== data.messageId),
+      );
+    };
+
     const handleSeen = (data: any) => {
       if (data.chatRoomId !== Number(chatRoomId)) return;
 
@@ -389,6 +399,8 @@ export default function ChatWindow({
     };
 
     socket.on("new_message", handleNewMessage);
+    socket.on("message_blocked", handleBlocked);
+    socket.on("message_removed", handleRemoved);
     socket.on("user_typing", handleTyping);
     socket.on("user_stop_typing", handleStopTyping);
     socket.on("messages_seen", handleSeen);
@@ -401,6 +413,8 @@ export default function ChatWindow({
       });
 
       socket.off("new_message", handleNewMessage);
+      socket.off("message_blocked", handleBlocked);
+      socket.off("message_removed", handleRemoved);
       socket.off("user_typing", handleTyping);
       socket.off("user_stop_typing", handleStopTyping);
       socket.off("messages_seen", handleSeen);
@@ -433,8 +447,6 @@ export default function ChatWindow({
     const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
     return scrollHeight - (scrollTop + clientHeight) < 100;
   };
-
- 
 
   // Handle Enter Key
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
