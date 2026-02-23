@@ -23,6 +23,11 @@ import { mapApiJobToUI } from "@/lib/utils/projectMapper";
 import { Project } from "@/components/projects/data";
 
 export default function NewProjectsPage() {
+  const [filters, setFilters] = useState({
+    categories: [] as string[],
+    jobTypes: [] as string[],
+  });
+
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   // 1. FETCH JOBS
@@ -66,6 +71,52 @@ export default function NewProjectsPage() {
       };
     });
   }, [rawJobs, bookmarksData]);
+
+  const allCategories = useMemo(() => {
+    const techSet = new Set<string>();
+
+    projects.forEach((project) => {
+      project.skills?.forEach((tech: string) => {
+        techSet.add(tech);
+      });
+    });
+
+    return Array.from(techSet).sort();
+  }, [projects]);
+
+  const filteredProjects = useMemo(() => {
+    return projects.filter((project) => {
+      // CATEGORY FILTER
+      if (filters.categories.length > 0) {
+        const hasCategory = project.skills?.some((tech: string) =>
+          filters.categories.includes(tech),
+        );
+        if (!hasCategory) return false;
+      }
+
+      // JOB TYPE FILTER
+      if (filters.jobTypes.length > 0) {
+        const jobType = project.type?.toLowerCase(); // fixed or hourly
+        if (!filters.jobTypes.includes(jobType)) return false;
+      }
+
+      return true;
+    });
+  }, [projects, filters]);
+
+  const handleFilterChange = (category: string, values: string[]) => {
+    setFilters((prev) => ({
+      ...prev,
+      [category]: values,
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      categories: [],
+      jobTypes: [],
+    });
+  };
 
   // 5. HANDLER: Toggle Bookmark
   const handleToggleBookmark = async (project: any) => {
@@ -125,7 +176,13 @@ export default function NewProjectsPage() {
   }
 
   return (
-    <ProjectLayout hideSidebars={false}>
+    <ProjectLayout
+      hideSidebars={false}
+      filters={filters}
+      onFilterChange={handleFilterChange}
+      categories={allCategories}
+      onClearFilters={clearFilters}
+    >
       {jobsLoading ? (
         <div className="flex justify-center py-20">
           <Loader2 className="animate-spin text-indigo-600" />
@@ -136,8 +193,8 @@ export default function NewProjectsPage() {
         </div>
       ) : (
         <div className="space-y-4 animate-in fade-in">
-          {projects.length > 0 ? (
-            projects.map((project) => (
+          {filteredProjects.length > 0 ? (
+            filteredProjects.map((project) => (
               <EnhancedNewProjectCard
                 key={project.id}
                 project={project}

@@ -18,6 +18,11 @@ import { useCreateProposalMutation } from "@/app/redux/api/proposals.api";
 import { toast } from "sonner";
 
 export default function BookmarksPage() {
+  const [filters, setFilters] = useState({
+    categories: [] as string[],
+    jobTypes: [] as string[],
+  });
+
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   const { data: rawJobs, isLoading } = useGetBookmarksQuery();
@@ -40,6 +45,52 @@ export default function BookmarksPage() {
       }),
     );
   }, [rawJobs]);
+
+  const allCategories = useMemo(() => {
+    const techSet = new Set<string>();
+
+    bookmarkedProjects.forEach((project: any) => {
+      project.skills?.forEach((tech: string) => {
+        techSet.add(tech);
+      });
+    });
+
+    return Array.from(techSet).sort();
+  }, [bookmarkedProjects]);
+
+  const filteredProjects = useMemo(() => {
+    return bookmarkedProjects.filter((project: any) => {
+      // CATEGORY FILTER
+      if (filters.categories.length > 0) {
+        const hasCategory = project.skills?.some((tech: string) =>
+          filters.categories.includes(tech),
+        );
+        if (!hasCategory) return false;
+      }
+
+      // JOB TYPE FILTER
+      if (filters.jobTypes.length > 0) {
+        const jobType = project.type?.toLowerCase();
+        if (!filters.jobTypes.includes(jobType)) return false;
+      }
+
+      return true;
+    });
+  }, [bookmarkedProjects, filters]);
+
+  const handleFilterChange = (category: string, values: string[]) => {
+    setFilters((prev) => ({
+      ...prev,
+      [category]: values,
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      categories: [],
+      jobTypes: [],
+    });
+  };
 
   const handleSubmitProposal = async (formData: any) => {
     if (!selectedProject) return;
@@ -96,14 +147,19 @@ export default function BookmarksPage() {
   };
 
   return (
-    <ProjectLayout>
+    <ProjectLayout
+      filters={filters}
+      onFilterChange={handleFilterChange}
+      categories={allCategories}
+      onClearFilters={clearFilters}
+    >
       {isLoading ? (
         <div className="flex justify-center py-20">
           <Loader2 className="animate-spin text-indigo-600" />
         </div>
       ) : (
         <div className="space-y-4">
-          {bookmarkedProjects.map((project: Project) => (
+          {filteredProjects.map((project: Project) => (
             <EnhancedNewProjectCard
               key={project.id}
               project={project}
@@ -111,7 +167,7 @@ export default function BookmarksPage() {
               onViewDetails={setSelectedProject}
             />
           ))}
-          {bookmarkedProjects.length === 0 && (
+          {filteredProjects.length === 0 && (
             <div className="text-center py-10 text-gray-500 bg-white rounded-xl border border-dashed border-gray-200">
               No saved projects.
             </div>

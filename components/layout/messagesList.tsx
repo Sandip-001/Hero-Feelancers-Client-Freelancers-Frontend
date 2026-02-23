@@ -400,7 +400,7 @@ export default function MessageList({
                   >
                     {message.name}
                     {message.role === "client" && (
-                      <span className="bg-blue-100 text-blue-700 text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                      <span className="bg-blue-100 text-[#14A9F9] text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
                         Client
                       </span>
                     )}

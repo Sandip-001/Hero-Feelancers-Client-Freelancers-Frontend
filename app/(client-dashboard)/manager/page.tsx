@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   ArrowRight
 } from "lucide-react";
+import ClientDevelopmentPopup from "@/components/popup/ClientDevelopment";
 
 // Mock Data for the Manager (In a real app, fetch this via API)
 const managerProfile = {
@@ -225,6 +226,8 @@ export default function RelationshipManagerPage() {
           </div>
         </div>
       </div>
+
+      <ClientDevelopmentPopup name="Client Relationship Manager" />
     </div>
   );
 }

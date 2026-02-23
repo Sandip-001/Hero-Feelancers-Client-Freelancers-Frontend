@@ -447,7 +447,7 @@ export default function PostJob() {
         </div>
 
         {/* ================= SIDEBAR ================= */}
-        <aside className="space-y-8">
+        <aside className="space-y-8 w-full flex-shrink-0 hidden lg:block sticky top-20 h-fit">
           {/* Visibility 
           <Card className="p-6">
             <h3 className="flex items-center gap-2 font-bold text-lg text-slate-800 mb-4">

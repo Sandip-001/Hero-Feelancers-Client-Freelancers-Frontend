@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { ChevronLeft, ChevronRight, Plus, Edit2, MoreVertical } from "lucide-react"
+import DevelopmentPopup from "@/components/popup/Development"
 
 const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 const months = [
@@ -280,6 +281,8 @@ export default function CalendarPage() {
           </div>
         </div>
       </div>
+
+      <DevelopmentPopup name={"Calendar"} />
     </div>
   )
 }

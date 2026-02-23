@@ -1,3 +1,4 @@
+import DevelopmentPopup from "@/components/popup/Development"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function ContactsPage() {
@@ -18,6 +19,8 @@ export default function ContactsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <DevelopmentPopup name={"Contacts"} />
     </div>
   )
 }

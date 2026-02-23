@@ -104,24 +104,7 @@ export default function ClientDashboardLayout({
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await logout().unwrap();
-
-      // Clear localStorage
-      localStorage.removeItem("isLoggedIn");
-      localStorage.removeItem("userType");
-
-      setIsProfileOpen(false);
-      toast.success("Logged out successfully");
-
-      // Redirect to home page
-      router.push("/");
-    } catch (error) {
-      toast.error("Logout failed");
-      console.error("Logout failed:", error);
-    }
-  };
+  
 
   return (
     <ClientGuard>
@@ -151,7 +134,7 @@ export default function ClientDashboardLayout({
           <header className="flex items-center justify-between px-4 sm:px-6 py-4 bg-white border-b border-slate-200 z-30 shrink-0 h-18">
             <div className="flex items-center gap-4">
               <h1 className="lg:hidden text-lg font-bold text-slate-900 tracking-tight">
-                HeroFreelancer
+                HeroFreelancers
               </h1>
             </div>
 
@@ -258,12 +241,30 @@ export default function ClientDashboardLayout({
               </div>
 
               <Link href="/jobpost">
-                <button className="hidden sm:block bg-indigo-600 text-white px-5 py-2 rounded-full text-sm font-semibold shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition-all transform active:scale-95">
+                <button className="hidden sm:block bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 text-white px-5 py-2 rounded-full text-sm font-semibold shadow-lg shadow-indigo-600/20 hover:bg-yellow-600 transition-all transform active:scale-95">
                   + New Project
                 </button>
               </Link>
 
               {/* Profile Section */}
+              <Link
+                href="/client-profile"
+                className="flex items-center gap-2 border-l border-slate-200 pl-3 sm:pl-4 cursor-pointer hover:opacity-80 transition-opacity"
+              >
+                <img
+                  src={data?.user?.profileImage}
+                  alt={data?.user?.fullName || "Client Avatar"}
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover bg-indigo-100 ring-2 ring-indigo-500/10"
+                />
+                <div className="hidden lg:block">
+                  <p className="font-semibold text-sm leading-none">
+                    {data?.user?.fullName || "Client Name"}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">Client</p>
+                </div>
+              </Link>
+
+              {/* Profile Section 
               <div className="relative" ref={profileRef}>
                 <div
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -282,7 +283,7 @@ export default function ClientDashboardLayout({
                   </div>
                 </div>
 
-                {/* Profile Dropdown */}
+                {/* Profile Dropdown 
                 {isProfileOpen && (
                   <div className="absolute right-0 top-full mt-3 w-48 bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden z-50 origin-top-right animate-in fade-in slide-in-from-top-2 duration-200">
                     <div className="p-2">
@@ -304,13 +305,13 @@ export default function ClientDashboardLayout({
                       </button>
                     </div>
                   </div>
-                )}
-              </div>
+                )} 
+              </div> */}
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto pb-24 lg:pb-0">
-            <div className="max-w-[1600px] mx-auto md:p-6">{children}</div>
+          <main className="flex-1 overflow-y-auto">
+            <div className="max-w-[1600px] mx-auto">{children}</div>
           </main>
         </div>
 

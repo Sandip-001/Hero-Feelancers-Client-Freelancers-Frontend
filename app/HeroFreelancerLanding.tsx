@@ -11,16 +11,13 @@ import ProcessSection from "./_components/Process";
 import EngagementModels from "./_components/EngagementModel";
 import FAQ from "./_components/FAQ";
 import LaunchModalWrapper from "./_components/LaucnhModaWrapper";
-import Navbar from "@/components/layout/Navbar"; 
+import Navbar from "@/components/layout/Navbar";
 import Footer from "@/app/_components/Footer";
-
 
 export default function HeroFreelancersLanding() {
   return (
     <div className="min-h-screen bg-white">
-    
       <Navbar />
-      
 
       <HeroSection />
       <TrustStrip />
@@ -34,7 +31,7 @@ export default function HeroFreelancersLanding() {
       <EngagementModels />
       <FAQ />
       <CTASection />
-       <Footer />
+      <Footer />
     </div>
   );
 }

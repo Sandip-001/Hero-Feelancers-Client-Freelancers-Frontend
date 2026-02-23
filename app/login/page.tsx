@@ -8,6 +8,7 @@ import { useLoginFreelancerMutation } from "../redux/api/freelancerAuth.api";
 import { useLoginClientMutation } from "../redux/api/clientAuth.api";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -33,23 +34,17 @@ export default function LoginPage() {
 
       if (userType === "client") {
         result = await loginClient({ email, password }).unwrap();
-        // Set localStorage for navbar compatibility
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('userType', 'client');
       } else {
         result = await loginFreelancer({ email, password }).unwrap();
-        // Set localStorage for navbar compatibility
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('userType', 'freelancer');
       }
 
       toast.success(result.message || "Login successful");
 
       // Navigate to appropriate dashboard
       if (result.user.role === "client") {
-        router.push("/client-dashboard");
+        router.push("/project");
       } else {
-        router.push("/dashboard");
+        router.push("/projects");
       }
     } catch (err: any) {
       toast.error(err?.data?.message || "Login failed");
@@ -61,11 +56,18 @@ export default function LoginPage() {
       {/* Minimal Header */}
       <div className="py-6 px-8">
         <Link href="/" className="flex items-center gap-2 w-fit">
-          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
-            HF
+          <div className="w-8 h-8 rounded-full overflow-hidden bg-blue-100 flex items-center justify-center">
+            <Image
+              src="/images/Logo/hero-freelancerss.png"
+              alt="HeroFreelancers Logo"
+              width={32}
+              height={32}
+              className="object-cover"
+            />
           </div>
+
           <span className="text-xl font-bold text-gray-700">
-            HeroFreelancer
+            HeroFreelancers
           </span>
         </Link>
       </div>
@@ -140,7 +142,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-full transition-all flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500  hover:bg-yellow-600 text-white font-bold py-3 rounded-full transition-all flex items-center justify-center gap-2"
               >
                 {isLoading ? (
                   <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -184,7 +186,7 @@ export default function LoginPage() {
               Don't have an account?{" "}
               <Link
                 href="/registration"
-                className="text-blue-600 font-semibold hover:underline"
+                className="text-yellow-600 font-semibold hover:underline"
               >
                 Sign Up
               </Link>

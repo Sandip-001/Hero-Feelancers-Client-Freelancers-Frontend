@@ -71,7 +71,7 @@ export default function MessagesPage() {
 
   return (
     // Main container - Fixed height, no overflow on body
-    <div className="flex bg-white overflow-hidden relative shadow-sm border border-slate-200 rounded-2xl h-[calc(100vh-9rem)]">
+    <div className="flex bg-white overflow-hidden relative shadow-sm border border-slate-200 h-[calc(100vh-7rem)]">
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

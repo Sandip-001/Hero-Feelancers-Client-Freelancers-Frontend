@@ -12,7 +12,7 @@ import {
   SubmittedProposalView,
 } from "@/components/projects/ui-blocks";
 import { AlertCircle, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner"; // Added toaster import
 
 // Redux Hooks
@@ -23,12 +23,17 @@ import {
 } from "@/app/redux/api/proposals.api";
 
 export default function AppliedPage() {
+  const [filters, setFilters] = useState({
+    categories: [] as string[],
+    jobTypes: [] as string[],
+  });
+
   const [managerModalOpen, setManagerModalOpen] = useState(false);
   const [selectedManager, setSelectedManager] =
     useState<ManagerInfo>(DEFAULT_MANAGER);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [withdrawingId, setWithdrawingId] = useState<number | null>(null);
-  const [sendMessage, setSendMessage] = useState(true)
+  const [sendMessage, setSendMessage] = useState(true);
 
   // 1. Fetch Current User
   const { data: authData, isLoading: isAuthLoading } = useGetMeQuery();
@@ -56,7 +61,7 @@ export default function AppliedPage() {
 
   const handleWithdraw = async (proposalId: number) => {
     if (!confirm("Are you sure you want to withdraw this proposal?")) return;
-    
+
     try {
       setWithdrawingId(proposalId);
       await withdrawProposal(proposalId).unwrap();
@@ -67,6 +72,56 @@ export default function AppliedPage() {
     } finally {
       setWithdrawingId(null);
     }
+  };
+
+  const allCategories = useMemo(() => {
+    const techSet = new Set<string>();
+
+    rawProposals?.data?.forEach((proposal: any) => {
+      proposal.Job?.technologies?.forEach((tech: string) => {
+        techSet.add(tech);
+      });
+    });
+
+    return Array.from(techSet).sort();
+  }, [rawProposals?.data]);
+
+  const filteredProjects = useMemo(() => {
+    const proposals = rawProposals?.data || [];
+
+    return proposals.filter((proposal: any) => {
+      const job = proposal.Job;
+
+      // CATEGORY FILTER
+      if (filters.categories.length > 0) {
+        const hasCategory = job?.technologies?.some((tech: string) =>
+          filters.categories.includes(tech),
+        );
+        if (!hasCategory) return false;
+      }
+
+      // JOB TYPE FILTER
+      if (filters.jobTypes.length > 0) {
+        const jobType = job?.priceType?.toLowerCase(); // fixed or hourly
+        if (!filters.jobTypes.includes(jobType)) return false;
+      }
+
+      return true;
+    });
+  }, [rawProposals?.data, filters]);
+
+  const handleFilterChange = (category: string, values: string[]) => {
+    setFilters((prev) => ({
+      ...prev,
+      [category]: values,
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      categories: [],
+      jobTypes: [],
+    });
   };
 
   if (selectedProject) {
@@ -81,7 +136,12 @@ export default function AppliedPage() {
   }
 
   return (
-    <ProjectLayout>
+    <ProjectLayout
+      filters={filters}
+      onFilterChange={handleFilterChange}
+      categories={allCategories}
+      onClearFilters={clearFilters}
+    >
       <ManagerProfileModal
         isOpen={managerModalOpen}
         onClose={() => setManagerModalOpen(false)}
@@ -95,8 +155,8 @@ export default function AppliedPage() {
         </div>
       ) : (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-          {rawProposals?.data.length > 0 ? (
-            rawProposals?.data?.map((proposal: any, index: number) => (
+          {filteredProjects.length > 0 ? (
+            filteredProjects.map((proposal: any, index: number) => (
               <AppliedCard
                 key={proposal.id || index}
                 project={proposal}
@@ -107,7 +167,7 @@ export default function AppliedPage() {
                 onViewDetails={(p: any) => setSelectedProject(p)}
                 onWithdraw={() => handleWithdraw(proposal.id)}
                 isWithdrawing={isWithdrawing}
-                sendMessage = {sendMessage}
+                sendMessage={sendMessage}
               />
             ))
           ) : (

@@ -3,21 +3,16 @@
 import { useGetMeQuery } from "@/app/redux/api/auth.api";
 import { useGetchatHistoryQuery } from "@/app/redux/api/chatMessage.api";
 import { useGetchatroomsQuery } from "@/app/redux/api/chatroom.api";
-import { connectSocket, getSocket } from "@/app/socket";
+import { getSocket } from "@/app/socket";
 import { formatDateLabel } from "@/lib/utils/formatDateLabelChat";
 import {
-  Paperclip,
-  Phone,
   Smile,
-  Video,
   ArrowLeft,
   PanelRightClose,
   PanelRightOpen,
   Search,
   SendHorizonal,
   CheckCheck,
-  Image as ImageIcon,
-  Mic,
   Check,
   ChevronDown,
 } from "lucide-react";
@@ -29,6 +24,7 @@ import React, {
   useLayoutEffect,
 } from "react";
 import { toast } from "sonner";
+import EmojiPicker from "emoji-picker-react";
 
 const cn = (...classes: string[]) => classes.filter(Boolean).join(" ");
 
@@ -133,6 +129,12 @@ export default function ChatWindow({
   // 2. GET CURRENT USER ID
   const { data: authData, isLoading: isAuthLoading } = useGetMeQuery();
 
+  const userBubbleGradient =
+    authData?.role === "client"
+      ? "bg-yellow-500 text-white"
+      : "bg-[#14A9F9] text-white"; // existing freelancer color
+      
+
   const { data: chatrooms } = useGetchatroomsQuery(
     {
       userId: authData?.user?.id,
@@ -154,6 +156,7 @@ export default function ChatWindow({
   // State for Messages and Input
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
+  const [showEmoji, setShowEmoji] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -168,6 +171,18 @@ export default function ChatWindow({
   const [searchMode, setSearchMode] = useState(false);
   const [searchText, setSearchText] = useState("");
   const messageRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const emojiWrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+  }, [inputValue]);
 
   useEffect(() => {
     if (headerUser) {
@@ -245,6 +260,11 @@ export default function ChatWindow({
         block: "center",
       });
     }
+  };
+
+  const handleEmojiClick = (emojiData: any) => {
+    setInputValue((prev) => prev + emojiData.emoji);
+    setShowEmoji(false);
   };
 
   useEffect(() => {
@@ -550,7 +570,7 @@ export default function ChatWindow({
           <div className="h-6 w-px bg-slate-200 mx-2 hidden sm:block"></div>
 
           <button
-            onClick={onToggleInfo}
+            //onClick={onToggleInfo}
             className={cn(
               "p-2 rounded-lg transition-all duration-200",
               isSidebarOpen
@@ -648,7 +668,7 @@ export default function ChatWindow({
                       "max-w-[85%] sm:max-w-[70%] rounded-2xl px-5 py-3 text-sm shadow-sm leading-relaxed relative group",
                       // User: Indigo Solid | Contact: White Card
                       msg.sender === "user"
-                        ? "bg-indigo-600 text-white rounded-br-sm"
+                        ? `${userBubbleGradient} rounded-br-sm`
                         : "bg-white text-slate-700 border border-slate-200 rounded-bl-sm",
                     )}
                   >
@@ -685,13 +705,13 @@ export default function ChatWindow({
                       {msg.sender === "user" && (
                         <>
                           {msg.status === "sent" && (
-                            <Check className="w-3 h-3" />
+                            <Check className="w-3 h-3" strokeWidth={3.5} />
                           )}
                           {msg.status === "delivered" && (
-                            <CheckCheck className="w-3 h-3 text-white font-bold" />
+                            <CheckCheck className="w-3 h-3 text-white font-bold" strokeWidth={3.5} />
                           )}
                           {msg.status === "seen" && (
-                            <CheckCheck className="w-3 h-3 text-blue-400" />
+                            <CheckCheck className="w-3 h-3 text-blue-800" strokeWidth={3.5} />
                           )}
                         </>
                       )}
@@ -729,7 +749,7 @@ export default function ChatWindow({
       {/* ---------------- INPUT AREA ---------------- */}
       <div className="bg-white px-4 py-4 border-t border-slate-200 z-10">
         <div className="max-w-4xl mx-auto flex items-end gap-2">
-          {/* Attachments Menu */}
+          {/* Attachments Menu  
           <div className="flex gap-1">
             <button
               title="Add File"
@@ -743,14 +763,16 @@ export default function ChatWindow({
             >
               <ImageIcon className="w-5 h-5" />
             </button>
-          </div>
+          </div> */}
 
           {/* Text Input */}
-          <div className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
-            <input
-              className="flex-1 py-3 bg-transparent border-none focus:outline-none placeholder-slate-400 text-sm text-slate-700"
+          <div className={`flex-1 bg-slate-50 border border-slate-200 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-indigo-500/20 ${authData?.role === "client"? "focus-within:border-yellow-500":"focus-within:border-blue-500"} transition-all`}>
+            <textarea
+              rows={1}
+              className="flex-1 py-3 bg-transparent border-none focus:outline-none placeholder-slate-400 text-sm text-slate-700 resize-none"
               placeholder="Type your message..."
               value={inputValue}
+              ref={textareaRef}
               onChange={(e) => {
                 const value = e.target.value;
                 setInputValue(value);
@@ -758,12 +780,10 @@ export default function ChatWindow({
                 const socket = getSocket();
                 if (!socket) return;
 
-                // emit typing start
                 socket.emit("typing_start", {
                   chatRoomId: Number(chatRoomId),
                 });
 
-                // reset typing timeout
                 if (typingTimeoutRef.current) {
                   clearTimeout(typingTimeoutRef.current);
                 }
@@ -772,22 +792,59 @@ export default function ChatWindow({
                   socket.emit("typing_stop", {
                     chatRoomId: Number(chatRoomId),
                   });
-                }, 1500); // stop after 1.5s idle
+                }, 1500);
               }}
-              onKeyDown={handleKeyDown}
+              onKeyDown={(e) => {
+                // Enter = new line
+                // Shift+Enter = new line
+                // Ctrl+Enter or just Enter = send
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
               autoFocus
             />
-            <button
-              title="Add Emoji"
-              className="text-slate-400 hover:text-amber-500 p-2 transition-colors"
-            >
-              <Smile className="w-5 h-5" />
-            </button>
+
+            <div className="relative">
+              <button
+                title="Add Emoji"
+                onClick={() => setShowEmoji((prev) => !prev)}
+                className="text-slate-400 hover:text-amber-500 p-2 transition-colors"
+              >
+                <Smile className="w-5 h-5" />
+              </button>
+
+              {showEmoji && (
+                <>
+                  {/* Overlay */}
+                  <div
+                    className="fixed inset-0 z-40 bg-black/20 sm:hidden"
+                    onClick={() => setShowEmoji(false)}
+                  />
+
+                  {/* Picker */}
+                  <div className="fixed bottom-0 left-0 right-0 z-50 sm:absolute sm:bottom-12 sm:right-0 sm:left-auto">
+                    <div className="bg-white rounded-t-2xl sm:rounded-lg shadow-xl mx-auto sm:mx-0 w-full sm:w-[320px] max-h-[60vh] overflow-hidden">
+                      <EmojiPicker
+                        onEmojiClick={handleEmojiClick}
+                        width="100%"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           <button
             onClick={handleSendMessage}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-full shadow-lg shadow-indigo-200 transition-all transform hover:scale-105 active:scale-95 flex-shrink-0"
+            className={cn(
+              "text-white p-3 rounded-full shadow-lg transition-all transform hover:scale-105 active:scale-95 flex-shrink-0",
+              authData?.role === "client"
+                ? "bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500"
+                : "bg-[#14A9F9] hover:bg-[#0f80bc]",
+            )}
           >
             <SendHorizonal className="w-5 h-5" />
           </button>

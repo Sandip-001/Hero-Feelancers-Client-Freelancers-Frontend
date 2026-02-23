@@ -6,13 +6,15 @@ export type ManagerInfo = { name?:string, role?:string, avatar?:string, fullName
 export type Project = {
   id: number; proposalId?: string | number; title: string; category: string; description: string; 
   budget: string; type: "Fixed" | "Hourly";
+  budgetValue: number; 
   experienceLevel: "Entry" | "Intermediate" | "Expert"; 
-  postedTime: string; 
+  postedTime: number; 
   dateRange: string; proposals: number; 
   status: "Pending" | "Applied" | "Awarded" | "Declined" | "Dispute";
   closed: string | null; rating: number | null; milestones: Milestone[] | null; isBookmarked: boolean;
   appliedDate?: string; declineReason?: string; disputeReason?: string;
   client?: ClientInfo; 
+  paymentVerified?: boolean;
   manager?: ManagerInfo;
   applicants?: Applicant[];
   skills?: string[];

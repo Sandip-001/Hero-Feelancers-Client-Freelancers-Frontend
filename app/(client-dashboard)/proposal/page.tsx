@@ -152,7 +152,7 @@ function ActionBtn({
     "flex items-center justify-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition duration-150 whitespace-nowrap w-full sm:w-auto active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed";
   let colorStyle =
     color === "indigo"
-      ? "text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-200"
+      ? "text-white bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 hover:bg-yellow-600 shadow-md shadow-indigo-200"
       : color === "emerald"
         ? "text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-200"
         : color === "ghost"

@@ -75,6 +75,12 @@ export const freelancerAuthApi = baseApi.injectEndpoints({
       invalidatesTags: ["Auth"],
     }),
 
+    getAllFreelancers: builder.query({
+      query: () =>
+        `api/freelancer`,
+      providesTags: ["Freelancer"],
+    }),
+
   }),
 });
 
@@ -86,4 +92,5 @@ export const {
   useLogoutFreelancerMutation,
 
   useUpdateFreelancerDetailsMutation,
+  useGetAllFreelancersQuery,
 } = freelancerAuthApi;

@@ -12,6 +12,7 @@ import {
   Building2,
   Crown
 } from "lucide-react";
+import DevelopmentPopup from "@/components/popup/Development";
 
 export default function SubscriptionPage() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
@@ -176,6 +177,8 @@ export default function SubscriptionPage() {
           <span className="text-2xl font-bold text-slate-400">Spotify</span>
           <span className="text-2xl font-bold text-slate-400">Stripe</span>
       </div>
+
+      <DevelopmentPopup name="Subscription Management" />
     </div>
   );
 }

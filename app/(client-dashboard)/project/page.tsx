@@ -319,7 +319,7 @@ export default function ProjectPage() {
   );
 }
 
-const getStatusStyles = (status: string) => {
+export const getStatusStyles = (status: string) => {
   switch (status) {
     case "active":
       return "bg-blue-50 text-blue-700";

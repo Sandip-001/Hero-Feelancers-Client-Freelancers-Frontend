@@ -1,9 +1,12 @@
 "use client";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import ProjectLayout, {
   ManagerProfileModal,
 } from "@/components/projects/ProjectLayout";
-import { AwardedCard, SubmittedProposalView } from "@/components/projects/ui-blocks";
+import {
+  AwardedCard,
+  SubmittedProposalView,
+} from "@/components/projects/ui-blocks";
 import {
   DEFAULT_MANAGER,
   ManagerInfo,
@@ -16,6 +19,11 @@ import { useGetMeQuery } from "@/app/redux/api/auth.api"; // 1. IMPORT THIS
 import { useGetAwardedJobsForFreelancerQuery } from "@/app/redux/api/jobs.api";
 
 export default function DisputePage() {
+  const [filters, setFilters] = useState({
+    categories: [] as string[],
+    jobTypes: [] as string[],
+  });
+
   const [managerModalOpen, setManagerModalOpen] = useState(false);
   const [selectedManager, setSelectedManager] =
     useState<ManagerInfo>(DEFAULT_MANAGER);
@@ -36,6 +44,52 @@ export default function DisputePage() {
 
   const isLoading = isAuthLoading || isProposalsLoading;
 
+  const allCategories = useMemo(() => {
+    const techSet = new Set<string>();
+
+    rawDisputeJobs?.data.forEach((project: any) => {
+      project.technologies?.forEach((tech: string) => {
+        techSet.add(tech);
+      });
+    });
+
+    return Array.from(techSet).sort();
+  }, [rawDisputeJobs?.data]);
+
+  const filteredProjects = useMemo(() => {
+    return rawDisputeJobs?.data.filter((project: any) => {
+      // CATEGORY FILTER
+      if (filters.categories.length > 0) {
+        const hasCategory = project.technologies?.some((tech: string) =>
+          filters.categories.includes(tech),
+        );
+        if (!hasCategory) return false;
+      }
+
+      // JOB TYPE FILTER
+      if (filters.jobTypes.length > 0) {
+        const jobType = project.priceType?.toLowerCase();
+        if (!filters.jobTypes.includes(jobType)) return false;
+      }
+
+      return true;
+    });
+  }, [rawDisputeJobs?.data, filters]);
+
+  const handleFilterChange = (category: string, values: string[]) => {
+    setFilters((prev) => ({
+      ...prev,
+      [category]: values,
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      categories: [],
+      jobTypes: [],
+    });
+  };
+
   if (selectedProject) {
     return (
       <ProjectLayout hideSidebars={true}>
@@ -48,7 +102,12 @@ export default function DisputePage() {
   }
 
   return (
-    <ProjectLayout>
+    <ProjectLayout
+      filters={filters}
+      onFilterChange={handleFilterChange}
+      categories={allCategories}
+      onClearFilters={clearFilters}
+    >
       <ManagerProfileModal
         isOpen={managerModalOpen}
         onClose={() => setManagerModalOpen(false)}
@@ -61,8 +120,8 @@ export default function DisputePage() {
         </div>
       ) : (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-          {rawDisputeJobs?.data.length > 0 ? (
-            rawDisputeJobs?.data?.map((project: any) => (
+          {filteredProjects.length > 0 ? (
+            filteredProjects.map((project: any) => (
               <AwardedCard
                 key={project.id}
                 project={project}

@@ -30,6 +30,7 @@ import {
   QrCode,
 } from "lucide-react";
 import Link from "next/link";
+import ClientDevelopmentPopup from "@/components/popup/ClientDevelopment";
 
 
 const theme = {
@@ -230,6 +231,8 @@ export default function ClientDashboardPage() {
           />
         </div>
       </main>
+
+      <ClientDevelopmentPopup name="Client Payments & Wallet" />
     </div>
   );
 }

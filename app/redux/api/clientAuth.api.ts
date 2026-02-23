@@ -63,6 +63,18 @@ export const clientAuthApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Auth"],
     }),
+
+    updateClient: builder.mutation<
+      { message: string},
+      FormData
+    >({
+      query: (formData) => ({
+        url: "/api/client/update-profile",
+        method: "PUT",
+        body: formData,
+      }),
+      invalidatesTags: ["Auth"],
+    }),
   }),
   
 });
@@ -73,4 +85,5 @@ export const {
   useResendClientOtpMutation,
   useLoginClientMutation,
   useLogoutClientMutation,
+  useUpdateClientMutation,
 } = clientAuthApi;

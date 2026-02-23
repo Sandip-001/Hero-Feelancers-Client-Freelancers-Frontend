@@ -20,14 +20,14 @@ export const usePostJobGuard = () => {
 
     // ❌ Not logged in
     if (!data?.user) {
-      router.push("/registration");
+      router.push("/login");
       return;
     }
 
     // ❌ Freelancer
     if (data.role === "freelancer") {
-      toast.error("Only clients can post jobs. Please register as a client.");
-      setTimeout(() => router.push("/registration"), 1500);
+      toast.error("Only clients can post jobs. Please login as a client.");
+      setTimeout(() => router.push("/login"), 1500);
       return;
     }
 

@@ -10,6 +10,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'cdni.iconscout.com',
       },
+      {
+        protocol: 'https',
+        hostname: "herofreelancers-org.b-cdn.net",
+      }
     ],
   },
 };

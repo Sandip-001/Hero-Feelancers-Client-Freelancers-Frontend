@@ -23,10 +23,12 @@ import {
   Trash2,
   Edit2,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function FreelancerProfile() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [projectModalOpen, setProjectModalOpen] = useState(false);
 
@@ -1162,7 +1164,7 @@ export default function FreelancerProfile() {
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span>Total jobs</span>
+                <span>Awarded jobs</span>
                 <span className="font-semibold text-gray-900">
                   {rawAwardedJobs?.totalJobs}
                 </span>
@@ -1178,7 +1180,16 @@ export default function FreelancerProfile() {
             </div>
 
             <div className="mt-6 flex gap-3">
-              <button className="flex-1 bg-white border border-gray-300 text-gray-700 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+              <button
+                className="flex-1 bg-white border border-gray-300 text-gray-700 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                onClick={() => {
+                  const slug = data?.user?.fullName
+                    .toLowerCase()
+                    .replace(/\s+/g, "-");
+
+                  router.push(`/freelancers/${slug}`);
+                }}
+              >
                 Public View
               </button>
 
@@ -1343,7 +1354,7 @@ export default function FreelancerProfile() {
             )}
           </section>
 
-          {/* WORK HISTORY */}
+          {/* WORK HISTORY 
           <section
             id="history"
             className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200"
@@ -1407,7 +1418,7 @@ export default function FreelancerProfile() {
                 </li>
               ))}
             </ul>
-          </section>
+          </section> */}
 
           {/* SERVICES */}
           <section
@@ -1446,7 +1457,7 @@ export default function FreelancerProfile() {
             </div>
           </section>
 
-          {/* EARNINGS */}
+          {/* EARNINGS 
           <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900">
@@ -1503,7 +1514,7 @@ export default function FreelancerProfile() {
                 </ul>
               </div>
             </div>
-          </section>
+          </section> */}
 
           {/* SOCIAL & CONTACT */}
           <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
@@ -1521,11 +1532,11 @@ export default function FreelancerProfile() {
                 </a>
               ))}
             </div>
-            <div className="mt-6 pt-6 border-t border-gray-100">
+            {/*<div className="mt-6 pt-6 border-t border-gray-100">
               <button className="w-full sm:w-auto bg-gray-900 text-white px-6 py-2.5 rounded-lg hover:bg-gray-800 transition-colors font-medium shadow-lg shadow-gray-200">
                 Invite to Job
               </button>
-            </div>
+            </div>*/}
           </section>
         </section>
       </main>

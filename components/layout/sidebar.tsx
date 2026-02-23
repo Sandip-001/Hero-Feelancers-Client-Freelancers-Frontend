@@ -24,13 +24,16 @@ import {
   X,
   Check,
   Zap,
-  MessageCircleMore
+  MessageCircleMore,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLogoutFreelancerMutation } from "@/app/redux/api/freelancerAuth.api";
 import { toast } from "sonner";
+import Image from "next/image";
+import { useDispatch } from "react-redux";
+import { baseApi } from "@/app/redux/api/baseApi";
 
 type SidebarProps = {
   collapsed: boolean;
@@ -41,8 +44,18 @@ type SidebarProps = {
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
-  { icon: FileText, label: "Projects", href: "/projects", shouldCollapse: true },
-  { icon: MessageCircleMore, label: "Workstreams", href: "/workstreams", shouldCollapse: true },
+  {
+    icon: FileText,
+    label: "Projects",
+    href: "/projects",
+    shouldCollapse: true,
+  },
+  {
+    icon: MessageCircleMore,
+    label: "Workstreams",
+    href: "/workstreams",
+    shouldCollapse: true,
+  },
   { icon: Calendar, label: "Calendar", href: "/calendar" },
   { icon: Contact, label: "Contacts", href: "/contacts" },
   { icon: CreditCard, label: "Payment History", href: "/payments" },
@@ -54,6 +67,7 @@ const promotionItems = [
 ];
 
 export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
+  const dispatch = useDispatch();
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -74,15 +88,11 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const handleLogout = async () => {
     try {
       await logout().unwrap();
-      
-      // Clear localStorage
-      localStorage.removeItem('isLoggedIn');
-      localStorage.removeItem('userType');
-      
+      // 🔥 CLEAR RTK QUERY CACHE
+      dispatch(baseApi.util.resetApiState());
       toast.success("Logged out successfully");
-      
       // Redirect to home page
-      router.push('/');
+      router.push("/");
     } catch (error) {
       toast.error("Logout failed");
       console.error("Logout failed:", error);
@@ -98,31 +108,44 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         className={cn(
           "fixed inset-y-0 left-0 z-40 bg-white border-r transition-all duration-300 ease-in-out",
           "hidden lg:flex flex-col",
-          sidebarWidth
+          sidebarWidth,
         )}
       >
         <div className="flex flex-col h-full">
           {/* LOGO HEADER */}
           <div className="h-16 border-b flex items-center justify-between px-4 shrink-0">
             {!collapsed && (
-              <Link href="/" className="flex items-center space-x-2 overflow-hidden">
-                <div className="h-8 w-8 bg-[#14A9F9] rounded-full flex items-center justify-center shrink-0 shadow-sm">
-                  <span className="text-white font-bold">HF</span>
+              <Link
+                href="/"
+                className="flex items-center space-x-2 overflow-hidden"
+              >
+                <div className="h-8 w-8 rounded-full overflow-hidden shrink-0 shadow-sm relative">
+                  <Image
+                    src="/logo.png"
+                    alt="HeroFreelancers"
+                    fill
+                    className="object-cover"
+                  />
                 </div>
+
                 <span className="text-xl font-bold text-gray-800 whitespace-nowrap tracking-tight">
-                  HeroFreelancer
+                  HeroFreelancers
                 </span>
               </Link>
             )}
-            
+
             <button
               className={cn(
                 "p-2 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors",
-                collapsed ? "mx-auto" : "ml-auto"
+                collapsed ? "mx-auto" : "ml-auto",
               )}
               onClick={() => setCollapsed(!collapsed)}
             >
-              {collapsed ? <Menu className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
+              {collapsed ? (
+                <Menu className="h-5 w-5" />
+              ) : (
+                <ChevronLeft className="h-5 w-5" />
+              )}
             </button>
           </div>
 
@@ -149,18 +172,22 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                         "flex items-center group py-2.5 px-3 rounded-xl transition-all duration-200",
                         isActive
                           ? "bg-blue-50 text-[#14A9F9] shadow-sm"
-                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
                       )}
                     >
                       <Icon
                         className={cn(
                           "h-5 w-5 shrink-0 transition-colors",
-                          isActive ? "text-[#14A9F9]" : "text-gray-400 group-hover:text-gray-600",
-                          collapsed ? "mx-auto" : "mr-3"
+                          isActive
+                            ? "text-[#14A9F9]"
+                            : "text-gray-400 group-hover:text-gray-600",
+                          collapsed ? "mx-auto" : "mr-3",
                         )}
                       />
                       {!collapsed && (
-                        <span className="flex-1 font-medium text-sm truncate">{item.label}</span>
+                        <span className="flex-1 font-medium text-sm truncate">
+                          {item.label}
+                        </span>
                       )}
                     </Link>
                   );
@@ -168,22 +195,22 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
               </div>
             </div>
 
-            {/* PRO CARD (Only visible when expanded) */}
+            {/* PRO CARD (Only visible when expanded) 
             {!collapsed && (
               <div className="px-3 mt-6">
                 <Link href="/subscription">
-                  <button
-                    className="relative w-full overflow-hidden p-4 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-left group hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
-                  >
-                    {/* Decorative circles */}
+                  <button className="relative w-full overflow-hidden p-4 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-left group hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">
+                    {/* Decorative circles /}
                     <div className="absolute top-0 right-0 -mt-2 -mr-2 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
                     <div className="absolute bottom-0 left-0 -mb-2 -ml-2 w-12 h-12 bg-white/10 rounded-full blur-lg"></div>
-                    
+
                     <div className="relative z-10 flex items-center gap-3 mb-1">
                       <div className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg shadow-inner">
                         <Crown className="w-4 h-4 text-white" />
                       </div>
-                      <h3 className="text-sm font-bold text-white tracking-wide">Become a PRO</h3>
+                      <h3 className="text-sm font-bold text-white tracking-wide">
+                        Become a PRO
+                      </h3>
                     </div>
                     <p className="relative z-10 text-xs text-blue-100 mt-1 font-medium pl-1">
                       Upgrade for 10x visibility
@@ -191,7 +218,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                   </button>
                 </Link>
               </div>
-            )}
+            )} */}
 
             {/* PROMOTIONS */}
             <div className="px-3 mt-6">
@@ -208,15 +235,20 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                       key={item.href}
                       href={item.href}
                       className={cn(
-                        "flex items-center group py-2.5 px-3 rounded-xl transition-all text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                        "flex items-center group py-2.5 px-3 rounded-xl transition-all text-gray-600 hover:bg-gray-50 hover:text-gray-900",
                       )}
                     >
-                      <Icon className={cn(
+                      <Icon
+                        className={cn(
                           "h-5 w-5 shrink-0 text-gray-400 group-hover:text-gray-600",
-                          collapsed ? "mx-auto" : "mr-3"
-                        )} 
+                          collapsed ? "mx-auto" : "mr-3",
+                        )}
                       />
-                      {!collapsed && <span className="font-medium text-sm truncate">{item.label}</span>}
+                      {!collapsed && (
+                        <span className="font-medium text-sm truncate">
+                          {item.label}
+                        </span>
+                      )}
                     </Link>
                   );
                 })}
@@ -226,15 +258,17 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
 
           {/* LOGOUT FOOTER */}
           <div className="p-4 border-t bg-white shrink-0">
-            <button 
+            <button
               onClick={handleLogout}
               className={cn(
                 "flex items-center w-full rounded-xl text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors",
-                collapsed ? "justify-center py-2" : "px-3 py-2.5 space-x-3"
+                collapsed ? "justify-center py-2" : "px-3 py-2.5 space-x-3",
               )}
             >
               <LogOut className="h-5 w-5 shrink-0" />
-              {!collapsed && <span className="font-medium text-sm">Logout</span>}
+              {!collapsed && (
+                <span className="font-medium text-sm">Logout</span>
+              )}
             </button>
           </div>
         </div>
@@ -243,26 +277,43 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       {/* --- MOBILE OVERLAY (DRAWER) --- */}
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
-          <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
             onClick={() => setMobileOpen(false)}
           />
           <div className="relative w-[85%] max-w-[320px] bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-left duration-300">
             <div className="h-20 flex items-center justify-between px-6 border-b bg-gray-50/50">
               <div className="flex items-center space-x-2">
-                <div className="h-8 w-8 bg-[#14A9F9] rounded-lg flex items-center justify-center shrink-0 shadow-sm">
-                  <span className="text-white font-bold">HF</span>
-                </div>
-                <span className="text-lg font-bold text-gray-800">HeroFreelancer</span>
+                <Link
+                  href="/"
+                  className="flex items-center space-x-2 overflow-hidden"
+                >
+                  <div className="h-8 w-8 rounded-full overflow-hidden shrink-0 shadow-sm relative">
+                    <Image
+                      src="/logo.png"
+                      alt="HeroFreelancers"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+
+                  <span className="text-xl font-bold text-gray-800 whitespace-nowrap tracking-tight">
+                    HeroFreelancers
+                  </span>
+                </Link>
               </div>
-              <button onClick={() => setMobileOpen(false)} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+              <button
+                onClick={() => setMobileOpen(false)}
+                className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+              >
                 <X className="h-5 w-5 text-gray-500" />
               </button>
             </div>
-            
-            <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
 
-              <h3 className="px-2 mb-2 text-xs font-semibold text-gray-400 uppercase">Menu</h3>
+            <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+              <h3 className="px-2 mb-2 text-xs font-semibold text-gray-400 uppercase">
+                Menu
+              </h3>
               {menuItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
@@ -272,71 +323,108 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                     onClick={() => setMobileOpen(false)}
                     className={cn(
                       "flex items-center space-x-3 py-3 px-3 rounded-lg transition-colors",
-                      isActive ? "bg-blue-50 text-[#14A9F9]" : "text-gray-600 hover:bg-gray-50"
+                      isActive
+                        ? "bg-blue-50 text-[#14A9F9]"
+                        : "text-gray-600 hover:bg-gray-50",
                     )}
                   >
-                    <item.icon className={cn("h-5 w-5", isActive ? "text-[#14A9F9]" : "text-gray-400")} />
+                    <item.icon
+                      className={cn(
+                        "h-5 w-5",
+                        isActive ? "text-[#14A9F9]" : "text-gray-400",
+                      )}
+                    />
                     <span className="font-medium text-sm">{item.label}</span>
                   </Link>
                 );
               })}
-            
 
-              <div className="mb-6 mt-6">
+              {/*<div className="mb-6 mt-6">
                 <Link href="/subscription">
                   <button
-                    onClick={() => { setMobileOpen(false); }}
+                    onClick={() => {
+                      setMobileOpen(false);
+                    }}
                     className="w-full p-4 rounded-xl bg-gradient-to-r from-[#14A9F9] to-blue-600 text-white flex items-center justify-between shadow-md"
                   >
                     <div className="flex items-center gap-3">
                       <Crown className="w-5 h-5 text-white" />
                       <div className="text-left">
-                          <p className="text-sm font-bold">Upgrade to Pro</p>
-                          <p className="text-[10px] text-blue-100">Unlock all features</p>
+                        <p className="text-sm font-bold">Upgrade to Pro</p>
+                        <p className="text-[10px] text-blue-100">
+                          Unlock all features
+                        </p>
                       </div>
                     </div>
                     <ChevronLeft className="w-4 h-4 rotate-180" />
                   </button>
                 </Link>
-              </div>
+              </div> */}
             </div>
 
-             <div className="p-4 border-t bg-gray-50">
-               <button onClick={handleLogout} className="flex items-center justify-center space-x-2 text-gray-600 hover:text-red-600 w-full px-4 py-3 bg-white border rounded-xl shadow-sm">
-                 <LogOut className="h-5 w-5" />
-                 <span className="font-medium text-sm">Log Out</span>
-               </button>
-             </div>
+            <div className="p-4 border-t bg-gray-50">
+              <button
+                onClick={handleLogout}
+                className="flex items-center justify-center space-x-2 text-gray-600 hover:text-red-600 w-full px-4 py-3 bg-white border rounded-xl shadow-sm"
+              >
+                <LogOut className="h-5 w-5" />
+                <span className="font-medium text-sm">Log Out</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* --- MOBILE BOTTOM NAVIGATION (CURVED) --- */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white h-[70px] flex items-center justify-between px-2 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
-         <Link href="/dashboard" className={cn("flex-1 flex flex-col items-center gap-1", pathname === "/dashboard" ? "text-[#14A9F9]" : "text-gray-400")}>
-            <LayoutDashboard className="h-6 w-6" />
-         </Link>
+        <Link
+          href="/dashboard"
+          className={cn(
+            "flex-1 flex flex-col items-center gap-1",
+            pathname === "/dashboard" ? "text-[#14A9F9]" : "text-gray-400",
+          )}
+        >
+          <LayoutDashboard className="h-6 w-6" />
+        </Link>
 
-         <Link href="/projects" className={cn("flex-1 flex flex-col items-center gap-1", pathname === "/projects" ? "text-[#14A9F9]" : "text-gray-400")}>
-            <FileText className="h-6 w-6" />
-         </Link>
+        <Link
+          href="/projects"
+          className={cn(
+            "flex-1 flex flex-col items-center gap-1",
+            pathname === "/projects" ? "text-[#14A9F9]" : "text-gray-400",
+          )}
+        >
+          <FileText className="h-6 w-6" />
+        </Link>
 
-         <div className="relative -top-8 flex-1 flex justify-center">
-            <Link 
-               href="/workstreams" 
-               className="h-14 w-14 rounded-full bg-[#14A9F9] text-white shadow-lg shadow-blue-400/40 flex items-center justify-center border-[5px] border-gray-50 transform hover:scale-110 transition-transform duration-200"
-            >
-               <Users className="h-6 w-6" />
-            </Link>
-         </div>
+        <div className="relative -top-8 flex-1 flex justify-center">
+          <Link
+            href="/workstreams"
+            className="h-14 w-14 rounded-full bg-[#14A9F9] text-white shadow-lg shadow-blue-400/40 flex items-center justify-center border-[5px] border-gray-50 transform hover:scale-110 transition-transform duration-200"
+          >
+            <Users className="h-6 w-6" />
+          </Link>
+        </div>
 
-         <Link href="/calendar" className={cn("flex-1 flex flex-col items-center gap-1", pathname === "/calendar" ? "text-[#14A9F9]" : "text-gray-400")}>
-            <Calendar className="h-6 w-6" />
-         </Link>
+        <Link
+          href="/calendar"
+          className={cn(
+            "flex-1 flex flex-col items-center gap-1",
+            pathname === "/calendar" ? "text-[#14A9F9]" : "text-gray-400",
+          )}
+        >
+          <Calendar className="h-6 w-6" />
+        </Link>
 
-         <button onClick={() => setMobileOpen(true)} className={cn("flex-1 flex flex-col items-center gap-1 text-gray-400", mobileOpen && "text-[#14A9F9]")}>
-            <Menu className="h-6 w-6" />
-         </button>
+        <button
+          onClick={() => setMobileOpen(true)}
+          className={cn(
+            "flex-1 flex flex-col items-center gap-1 text-gray-400",
+            mobileOpen && "text-[#14A9F9]",
+          )}
+        >
+          <Menu className="h-6 w-6" />
+        </button>
       </div>
     </>
   );

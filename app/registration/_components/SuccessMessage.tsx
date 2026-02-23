@@ -14,14 +14,17 @@ interface Props {
 
 const SuccessMessage = ({ name, userType }: Props) => {
   const router = useRouter();
-  const [countdown, setCountdown] = useState(10);
+  const [countdown, setCountdown] = useState(8);
+
+  const destination =
+    userType === "client" ? "/jobpost" : "/projects";
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          router.push("/client-dashboard");
+          router.push(destination);
           return 0;
         }
         return prev - 1;
@@ -29,7 +32,7 @@ const SuccessMessage = ({ name, userType }: Props) => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [router]);
+  }, [router, destination]);
 
   return (
     <motion.div
@@ -66,21 +69,21 @@ const SuccessMessage = ({ name, userType }: Props) => {
                 {userType === "client" ? (
                   <>
                     <p>
-                      🎯 You’re successfully registered as a <b>Client</b>.
+                      🎯 You’re now registered as a <b>Client</b>.
                     </p>
                     <p>
-                      You can post your project. Our team will be
-                      contact you soon for discuss about your requirement
+                      Start posting your projects and receive proposals from
+                      talented freelancers ready to bring your ideas to life.
                     </p>
                   </>
                 ) : (
                   <>
                     <p>
-                      🚀 You’re successfully registered as a <b>Freelancer</b>.
+                      🚀 You’re now registered as a <b>Freelancer</b>.
                     </p>
                     <p>
-                      Hero Freelancer is currently in development. As soon as
-                      projects go live, you’ll be notified via email.
+                      Explore live projects, apply to opportunities, showcase
+                      your skills, and start earning on HeroFreelancers.
                     </p>
                   </>
                 )}
@@ -88,16 +91,15 @@ const SuccessMessage = ({ name, userType }: Props) => {
             </div>
           </div>
 
-          {/* CLIENT CTA */}
-          {userType === "client" && (
-            <Button
-              className="mt-6 w-full text-lg py-6"
-              variant={"gold"}
-              onClick={() => router.push("/jobpost")}
-            >
-              Post Your First Project
-            </Button>
-          )}
+          {/* CTA BUTTON */}
+          <Button
+            className="mt-6 w-full text-lg py-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md hover:shadow-lg transition-all"
+            onClick={() => router.push(destination)}
+          >
+            {userType === "client"
+              ? "Post Your First Project"
+              : "Browse Projects"}
+          </Button>
 
           {/* COUNTDOWN */}
           <motion.div
@@ -105,8 +107,11 @@ const SuccessMessage = ({ name, userType }: Props) => {
             animate={{ opacity: 1 }}
             className="mt-6 text-sm text-gray-500"
           >
-            Redirecting to home in{" "}
-            <span className="font-bold text-red-500">{countdown}</span> seconds…
+            Redirecting in{" "}
+            <span className="font-bold text-red-500">
+              {countdown}
+            </span>{" "}
+            seconds…
           </motion.div>
         </CardContent>
       </Card>

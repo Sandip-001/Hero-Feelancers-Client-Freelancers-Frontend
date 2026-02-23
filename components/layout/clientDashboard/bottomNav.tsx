@@ -34,11 +34,13 @@ export default function BottomNav({ onMenuClick }: BottomNavProps) {
     <div className="fixed -bottom-1 left-0 right-0 z-50 flex justify-center md:hidden pointer-events-none">
       <div className="relative w-full max-w-md pointer-events-auto">
         {/* Background Layer */}
-        <div 
+        <div
           className="absolute inset-0 bottom-0 h-16 bg-white shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.1)] rounded-t-2xl rounded-b-none"
           style={{
-            maskImage: 'radial-gradient(circle 38px at center -15px, transparent 36px, black 37px)',
-            WebkitMaskImage: 'radial-gradient(circle 38px at center -15px, transparent 36px, black 37px)'
+            maskImage:
+              "radial-gradient(circle 38px at center -15px, transparent 36px, black 37px)",
+            WebkitMaskImage:
+              "radial-gradient(circle 38px at center -15px, transparent 36px, black 37px)",
           }}
         />
 
@@ -65,11 +67,16 @@ export default function BottomNav({ onMenuClick }: BottomNavProps) {
 
             if (isCenter) {
               return (
-                <div key={item.name} className="relative -top-8 flex flex-col items-center justify-center w-1/5">
+                <div
+                  key={item.name}
+                  className="relative -top-8 flex flex-col items-center justify-center w-1/5"
+                >
                   <Link
                     href={item.href}
                     className={`flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all duration-300 ${
-                      isActive ? "bg-emerald-600 text-white" : "bg-blue-600 text-white"
+                      isActive
+                        ? "bg-emerald-600 text-white"
+                        : "bg-blue-600 text-white"
                     } hover:scale-105 active:scale-95`}
                   >
                     <item.icon size={24} strokeWidth={2} />
@@ -84,7 +91,9 @@ export default function BottomNav({ onMenuClick }: BottomNavProps) {
                 href={item.href}
                 className="group relative flex flex-1 flex-col items-center justify-center gap-1 h-full w-1/5"
               >
-                <div className={`relative p-2 transition-colors duration-300 ${isActive ? "text-blue-700" : "text-slate-400 group-hover:text-slate-600"}`}>
+                <div
+                  className={`relative p-2 transition-colors duration-300 ${isActive ? "text-blue-700" : "text-slate-400 group-hover:text-slate-600"}`}
+                >
                   <item.icon size={22} strokeWidth={2} />
                 </div>
                 {isActive && (
